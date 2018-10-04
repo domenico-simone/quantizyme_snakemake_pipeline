@@ -1,0 +1,12 @@
+pipeline_dir: "/nfs4/my-gridfront/home1/done0001/quanty_test2/quantizyme_snakemake_pipeline"
+reference_transcripts_dir: "reference_transcripts"
+reference_transcripts_length_distribution: "reference_transcripts_length_distribution"
+model_dir: "models"
+log_dir: "logs"
+#ref_gene_fasta: ""
+subtree_file: ""
+projectID: ""
+remove_seqs: TRUE
+remove_lower_t: 300
+remove higher_t: 1500
+subtrees: 3

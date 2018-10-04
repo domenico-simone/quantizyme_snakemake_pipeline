@@ -1,0 +1,99 @@
+import sys, os
+
+# # which rules shall not be executed on cluster as separate job?
+localrules: quantizyme_model_all, transcript_filtering, transcript_length_distribution
+
+#reference_transcripts_dir = config['reference_transcripts_dir']
+#projectID = config['projectID']
+remove_seqs = config['remove_seqs'] # FALSE
+#remove_lower_t = config['remove_lower_t'] # 0
+#remove_higher_t = config['remove_lower_t'] # 0
+subtrees = config['subtrees'] #3
+
+#print(reference_transcripts_dir)
+#print(scriptsDir)
+
+rule quantizyme_model_all:
+    input:
+        expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID),
+        #expand("{model_dir_projectID}/{projectID}_start.fasta", model_dir_projectID=model_dir_projectID, projectID=projectID),
+        expand("{reference_transcripts_length_distribution}/{projectID}_transcript_length_distribution.pdf", reference_transcripts_length_distribution=reference_transcripts_length_distribution, projectID=projectID),
+        expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID)
+
+rule transcript_length_distribution:
+    input:
+        expand("{reference_transcripts_dir}/{projectID}.fasta", reference_transcripts_dir=reference_transcripts_dir, projectID=projectID)
+    output:
+        expand("{reference_transcripts_length_distribution}/{projectID}_transcript_length_distribution.pdf", reference_transcripts_length_distribution=reference_transcripts_length_distribution, projectID=projectID)
+    log:
+        expand("logs/quantizyme_model_figure1/{projectID}_quantizyme_model_figure1.log", projectID=projectID)
+    shell:
+        """
+        Rscript --vanilla {scriptsDir}/quantizyme_model_figure1.R \
+                          {output} \
+                          {input} 2> {log}
+        """
+
+rule transcript_filtering:
+    input:
+        expand("{reference_transcripts_dir}/{projectID}.fasta", reference_transcripts_dir=reference_transcripts_dir, projectID=projectID)
+        #"{ref_gene}.fasta"
+    output:
+#        filtered_ref_sequences = "{proj_name}_MODEL/{proj_name}_start.fasta"
+        #expand("{model_dir_projectID}/{projectID}_start.fasta", model_dir_projectID=model_dir_projectID, projectID=projectID),
+        expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID)
+    params:
+        #outdir = {model_dir_projectID},
+        outdir = expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        outplot = expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_thresholded_distribution.pdf", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        filter_seqs = {remove_seqs},
+        filter_lower_t = {remove_lower_t},
+        filter_higher_t = {remove_higher_t}
+    log:
+        expand("logs/quantizyme_model_transcript_filtering/{projectID}_filtering_{{remove_lower_t}}_{{remove_higher_t}}.log", projectID=projectID)
+    shell:
+        """
+        Rscript --vanilla {scriptsDir}/quantizyme_model_ref_sequence_filtering.R -d {params.outdir} -p {projectID} -i {input} -o {output} -f {params.filter_seqs} -l {params.filter_lower_t} -u {params.filter_higher_t} --outplot={params.outplot}
+        """
+
+rule run_MSA:
+    input:
+        expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID)
+    output:
+        expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID)
+    threads: 20
+    log:
+        expand("logs/quantizyme_model_MSA/{projectID}_filtering_{{remove_lower_t}}_{{remove_higher_t}}.log", projectID=projectID)
+    params:
+        outdir = expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+    shell:
+        """
+        clustalo \
+        --threads {threads} \
+        -i {input} \
+        -o {output} \
+        --outfmt=phy  > align1_clustalo.log 2>&1
+        """
+#
+# rule subtree:
+#     input: name="" if config["subtree_list"] else ...
+#     output:
+
+
+#rule html_report
+
+
+# rule all:
+#     input: "test_output"
+#
+# rule test_interactive:
+#     input:
+#         "test_input"
+#     output:
+#         "test_output"
+#     shell:
+#         """
+#         #rm -f test_output
+#         Rscript --vanilla test.2.R
+#         touch test_output
+#         """
