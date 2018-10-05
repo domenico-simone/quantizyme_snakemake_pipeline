@@ -29,7 +29,10 @@ include: os.path.join(ruleDir, 'quantizyme_model_preprocessing.rules')
 # Target inputs
 rule all:
     input:
-        expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        #expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
         #expand("{model_dir_projectID}/{projectID}_start.fasta", model_dir_projectID=model_dir_projectID, projectID=projectID),
         expand("{reference_transcripts_length_distribution}/{projectID}_transcript_length_distribution.pdf", reference_transcripts_length_distribution=reference_transcripts_length_distribution, projectID=projectID),
-        expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+        expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        #expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_hc_tree_1.pdf", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+
+#bweeeeee

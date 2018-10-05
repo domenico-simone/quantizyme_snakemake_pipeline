@@ -8,11 +8,11 @@ suppressMessages(library(phangorn))
 suppressMessages(library(ape))
 suppressMessages(library(optparse))
 
-args <- commandArgs(TRUE)
-project.id = args[1]
-transcript.fasta = args[2]
-low.thres = as.integer(args[3])
-up.thres = as.integer(args[4])
+# args <- commandArgs(TRUE)
+# project.id = args[1]
+# transcript.fasta = args[2]
+# low.thres = as.integer(args[3])
+# up.thres = as.integer(args[4])
 
 # mandatory opts:
 # - projectID

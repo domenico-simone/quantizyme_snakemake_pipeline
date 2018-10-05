@@ -15,10 +15,11 @@ subtrees = config['subtrees'] #3
 
 rule quantizyme_model_all:
     input:
-        expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID),
+        #expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID),
         #expand("{model_dir_projectID}/{projectID}_start.fasta", model_dir_projectID=model_dir_projectID, projectID=projectID),
         expand("{reference_transcripts_length_distribution}/{projectID}_transcript_length_distribution.pdf", reference_transcripts_length_distribution=reference_transcripts_length_distribution, projectID=projectID),
-        expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID)
+        expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID),
+        #expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_hc_tree_1.pdf", model_dir=model_dir, projectID=projectID)
 
 rule transcript_length_distribution:
     input:
@@ -73,6 +74,18 @@ rule run_MSA:
         -i {input} \
         -o {output} \
         --outfmt=phy  > {log} 2>&1
+        """
+
+rule clustering:
+    input:
+        expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID)
+    output:
+        expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_hc_tree_1.pdf", model_dir=model_dir, projectID=projectID),
+        #expand("{projectID}_hc_tree_1.pdf", projectID=projectID),
+        dir=expand('{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}', model_dir=model_dir, projectID=projectID)
+    shell:
+        """
+        Rscript --vanilla {scriptsDir}/quantizyme_model_clustering.R -a {input} -d {output.dir}
         """
 #
 # rule subtree:
