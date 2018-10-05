@@ -8,5 +8,5 @@ subtree_file: ""
 projectID: ""
 remove_seqs: TRUE
 remove_lower_t: 300
-remove higher_t: 1500
+remove_higher_t: 1500
 subtrees: 3
