@@ -11,8 +11,8 @@ import sys, os
 # #remove_higher_t = config['remove_lower_t'] # 0
 # subtrees = config['subtrees'] #3
 
-print(reference_transcripts_length_distribution)
-print(projectID)
+#print(reference_transcripts_length_distribution)
+#print(projectID)
 #print(reference_transcripts_dir)
 #print(scriptsDir)
 
