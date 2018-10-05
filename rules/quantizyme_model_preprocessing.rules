@@ -72,7 +72,7 @@ rule run_MSA:
         --threads {threads} \
         -i {input} \
         -o {output} \
-        --outfmt=phy  > align1_clustalo.log 2>&1
+        --outfmt=phy  > {log} 2>&1
         """
 #
 # rule subtree:
