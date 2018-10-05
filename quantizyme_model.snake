@@ -3,13 +3,14 @@
 """
 
 import sys, os
+import pandas as pd
 
 configfile: "config.yaml"
 
 # Define variables used through the pipeline
 ruleDir = os.path.join(os.path.expanduser(config['pipeline_dir']), 'rules')
 scriptsDir = os.path.join(os.path.expanduser(config['pipeline_dir']), 'scripts')
-
+#projectIDs = pd.read_table(config["reference_transcripts"], comment='#').set_index("reference_transcript", drop=False)
 # Define which gene to work on
 #ref_gene_fasta = config['ref_gene_fasta']
 reference_transcripts_dir = config['reference_transcripts_dir']
@@ -17,6 +18,7 @@ reference_transcripts_length_distribution = config['reference_transcripts_length
 model_dir = config['model_dir']
 projectID = config['projectID']
 log_dir = config['log_dir']
+remove_seqs = config['remove_seqs']
 remove_lower_t = config['remove_lower_t'] # 0
 remove_higher_t = config['remove_higher_t'] # 0
 model_dir_projectID = model_dir + "/" + projectID + "_MODEL_" + "_" + str(remove_lower_t) + "_" + str(remove_higher_t)
@@ -31,8 +33,12 @@ rule all:
     input:
         #expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
         #expand("{model_dir_projectID}/{projectID}_start.fasta", model_dir_projectID=model_dir_projectID, projectID=projectID),
-        expand("{reference_transcripts_length_distribution}/{projectID}_transcript_length_distribution.pdf", reference_transcripts_length_distribution=reference_transcripts_length_distribution, projectID=projectID),
-        expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        #"{}/{}_MODEL_{}_{}/{}_start.fasta".format(model_dir, projectID, remove_lower_t, remove_higher_t, projectID),
+        #"{}/{}_MODEL_{}_{}/align1.clustalo.phy".format(model_dir, projectID, remove_lower_t, remove_higher_t),
+        "{}/{}_MODEL_{}_{}/{}_hc_tree_1.pdf".format(model_dir, projectID, remove_lower_t, remove_higher_t, projectID),
+        "reference_transcripts_length_distribution/{}_transcript_length_distribution.pdf".format(projectID)
+        #expand("reference_transcripts_length_distribution/{projectID}_transcript_length_distribution.pdf", projectID=projectID),
+        #expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
         #expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_hc_tree_1.pdf", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
 
 #bweeeeee

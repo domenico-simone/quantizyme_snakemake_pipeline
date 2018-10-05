@@ -1,0 +1,117 @@
+required.libs = c("seqinr", "phangorn", "ape")
+installed.libs = rownames(installed.packages())
+missing.libs = setdiff(required.libs, installed.libs)
+if(length(missing.libs) > 0) stop(paste("  Missing the following R-libraries:", paste(missing.libs, collapse = "  "), "\n\n"))
+
+suppressMessages(library(seqinr))
+suppressMessages(library(phangorn))
+suppressMessages(library(ape))
+
+option_list = list(
+    make_option(c("-a", "--alignment_file"), type="character", default=NULL,
+            help="alignment file [default= %default] (MANDATORY)", metavar="character"),
+    make_option(c("-d", "--outdir"), type="character", default=NULL,
+            help="outdir [default= %default] (MANDATORY)"),
+    make_option("--tree1_pdf", type="character", default="hc_tree_1.pdf",
+            help="Tree file version 1 - pdf"),
+    make_option("--tree1_txt", type="character", default="tree1.new",
+            help="Tree file version 1 - txt"),
+    make_option("--tree2_pdf", type="character", default="hc_tree_2.pdf",
+            help="Tree file version 2 - pdf"),
+    make_option("--tree2_txt", type="character", default="tree2.new",
+            help="Tree file version 2 - txt"))
+
+opt_parser = OptionParser(option_list=option_list)
+opt = parse_args(opt_parser)
+
+out.phy = opt$a
+outdir = opt$d
+outpdf3 = opt$tree1_pdf
+outtxt3 = opt$tree1_txt
+outpdf7 = opt$tree2_pdf
+outtxt7 = opt$tree2_txt
+
+if (is.null(opt$outdir)){
+  print_help(opt_parser)
+  stop("Please provide outdir name.\n", call.=FALSE)
+}
+
+aln <- read.alignment(out.phy, format="phylip", forceToLower = FALSE)
+if(class(aln) != "alignment") stop(paste(" Could not read alignment '", out.phy, "'.\n\n"))
+if(aln$nb != length(transcript.fas)) stop(paste(" Alignment has", aln$nb, "entries, but transcript had", length(transcript.fas), "entries.\n\n"))
+# insert.text(outhtml, text="Calculated alignment for transcript sequence:", color="black")
+# set.link(outhtml, out.phy, caption="phylip format")
+# line.feed(outhtml, 1)
+
+aln.1 = as.phyDat(aln)
+if(class(aln.1) != "phyDat") stop(" Could not convert alignment to phyDat format.\n\n")
+
+distmat = dist.ml(aln.1, model="JC69")
+if(class(distmat) != "dist") stop(" Could not calculate distance matrix from alignment.\n\n")
+if(sum(is.na(distmat))	!= 0) stop(" Distance matrix includes missing data.\n\n")
+
+cluster = hclust(distmat, method = "ward.D")
+if(class(cluster) != "hclust") stop(" Hierarchical clustering failed.\n\n")
+
+if(length(cluster$labels) < 25) {
+    labels = gsub(" ", "", cluster$labels)
+} else {
+    labels = FALSE
+}
+if(is.logical(labels)) cat("  Labels in the phylogenetic trees cannot be shown: too many sequences.\n\n")
+
+#X11(width=6, height=6)
+#outpdf3 =
+pdf(file.path(outdir, outpdf3))
+plot(cluster, labels = labels, hang = 0.1, ann = TRUE, main = paste("Phylogenetic tree, project", project.id), sub = "", xlab = "", ylab = "", font.main=1)
+mtext(side=1, paste(length(transcript.fas), "sequences"), col="blue", cex=0.9)
+dev.off()
+# fn = paste(project.id, "hc_tree_1.png", sep="_")
+# outpng3 = file.path(getwd(), outfolder, fn)
+# invisible(dev.copy(png, file = outpng3, unit="px", width=960, height=960, res=120)); invisible(dev.off())
+# fn = paste(project.id, "hc_tree_1.pdf", sep="_")
+# outpdf3 = file.path(getwd(), outfolder, fn)
+#invisible(dev.copy2pdf(file = outpdf3, out.type = "pdf")); invisible(dev.off())
+cat(paste("  Phylogenetic tree (version 1) saved to", file.path(outdir, outpdf3), "\n"))
+#### link plot
+# insert.text(outhtml, text="Phylogenetic tree, rectangle format (hclust):", color="black")
+# set.link(outhtml, outpdf3, caption="pdf")
+# insert.blanks(outhtml, 2)
+# link tree in Newick format:
+cluster.phylo <- as.phylo(cluster)
+#fn = "tree1.new"
+tree.file = file.path(outdir, outtxt3)
+write.tree(phy = cluster.phylo, file = tree.file)
+cat(paste("  Neighbor joining tree (version 1) saved to '", outtxt3, "'\n\n"))
+# set.link(outhtml, tree.file, caption="Newick")
+# line.feed(outhtml, 1)
+
+cluster2 = nj(distmat)
+if(class(cluster2) != "phylo") stop(" Could not calculate phylogenetic tree by neighbor-joining.\n\n")
+
+if(cluster2$Nnode < 25) {
+    labels = TRUE
+} else {
+    labels = FALSE
+}
+
+#X11(width=6, height=6)
+pdf(file.path(outdir, outpdf7))
+plot.phylo(cluster2, type = "unrooted", show.tip.label = labels, main = paste("Phylogenetic tree, project", project.id), font.main = 1)
+dev.off()
+# fn = paste(project.id, "hc_tree_2.png", sep="_")
+# outpdf7 = file.path(getwd(), outfolder, fn)
+# invisible(dev.copy2pdf(file = outpdf7, out.type = "pdf")); invisible(dev.off())
+cat(paste("  Phylogenetic tree (version 2) saved to", outpdf7, "\n"))
+##### link plot
+# insert.text(outhtml, text="Phylogenetic tree, radial format (nj, ape):", color="black")
+# set.link(outhtml, outpdf7, caption="pdf")
+# insert.blanks(outhtml, 2)
+# link tree in Newick format:
+fn = "tree2.new"
+tree.file = file.path(outdir, outtxt7)
+#tree.file = file.path(getwd(), outfolder, fn)
+write.tree(phy = cluster2, file = tree.file)
+cat(paste("  Neighbor joining tree (version 2) saved to '", outtxt7, "'\n\n"))
+# set.link(outhtml, tree.file, caption="Newick")
+# line.feed(outhtml, 1)

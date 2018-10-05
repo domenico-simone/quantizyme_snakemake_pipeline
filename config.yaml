@@ -1,4 +1,5 @@
 pipeline_dir: "/nfs4/my-gridfront/home1/done0001/quanty_test2/quantizyme_snakemake_pipeline"
+#reference_transcripts: "reference_transcripts.txt"
 reference_transcripts_dir: "reference_transcripts"
 reference_transcripts_length_distribution: "reference_transcripts_length_distribution"
 model_dir: "models"
