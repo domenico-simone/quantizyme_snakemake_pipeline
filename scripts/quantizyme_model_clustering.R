@@ -6,12 +6,17 @@ if(length(missing.libs) > 0) stop(paste("  Missing the following R-libraries:", 
 suppressMessages(library(seqinr))
 suppressMessages(library(phangorn))
 suppressMessages(library(ape))
+suppressMessages(library(optparse))
 
 option_list = list(
     make_option(c("-a", "--alignment_file"), type="character", default=NULL,
             help="alignment file [default= %default] (MANDATORY)", metavar="character"),
     make_option(c("-d", "--outdir"), type="character", default=NULL,
             help="outdir [default= %default] (MANDATORY)"),
+    make_option(c("-i", "--input"), type="character", default=NULL,
+            help="input fasta file [default= %default] (MANDATORY)"),
+    make_option(c("-p", "--projectID"), type="character", default=NULL,
+            help="input fasta file [default= %default] (MANDATORY)"),
     make_option("--tree1_pdf", type="character", default="hc_tree_1.pdf",
             help="Tree file version 1 - pdf"),
     make_option("--tree1_txt", type="character", default="tree1.new",
@@ -25,16 +30,25 @@ opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
 
 out.phy = opt$a
-outdir = opt$d
-outpdf3 = opt$tree1_pdf
-outtxt3 = opt$tree1_txt
-outpdf7 = opt$tree2_pdf
-outtxt7 = opt$tree2_txt
+outdir = opt$outdir
+transcript.fasta = opt$i
+project.id = opt$p
+outpdf3 = paste(project.id, opt$tree1_pdf, sep = "_")
+outtxt3 = paste(project.id, opt$tree1_txt, sep = "_")
+outpdf7 = paste(project.id, opt$tree2_pdf, sep = "_")
+outtxt7 = paste(project.id, opt$tree2_txt, sep = "_")
 
 if (is.null(opt$outdir)){
   print_help(opt_parser)
   stop("Please provide outdir name.\n", call.=FALSE)
 }
+
+# outdir
+# outpdf3
+# file.path(outdir, outpdf3)
+
+transcript.fas = read.fasta(transcript.fasta, seqtype = "DNA", as.string = TRUE, forceDNAtolower = FALSE)
+if(class(transcript.fas) != "list") stop(paste("\n Reading file '", transcript.fasta, "' not successful. \n\n"))
 
 aln <- read.alignment(out.phy, format="phylip", forceToLower = FALSE)
 if(class(aln) != "alignment") stop(paste(" Could not read alignment '", out.phy, "'.\n\n"))
@@ -65,7 +79,7 @@ if(is.logical(labels)) cat("  Labels in the phylogenetic trees cannot be shown: 
 pdf(file.path(outdir, outpdf3))
 plot(cluster, labels = labels, hang = 0.1, ann = TRUE, main = paste("Phylogenetic tree, project", project.id), sub = "", xlab = "", ylab = "", font.main=1)
 mtext(side=1, paste(length(transcript.fas), "sequences"), col="blue", cex=0.9)
-dev.off()
+invisible(dev.off())
 # fn = paste(project.id, "hc_tree_1.png", sep="_")
 # outpng3 = file.path(getwd(), outfolder, fn)
 # invisible(dev.copy(png, file = outpng3, unit="px", width=960, height=960, res=120)); invisible(dev.off())
@@ -98,7 +112,7 @@ if(cluster2$Nnode < 25) {
 #X11(width=6, height=6)
 pdf(file.path(outdir, outpdf7))
 plot.phylo(cluster2, type = "unrooted", show.tip.label = labels, main = paste("Phylogenetic tree, project", project.id), font.main = 1)
-dev.off()
+invisible(dev.off())
 # fn = paste(project.id, "hc_tree_2.png", sep="_")
 # outpdf7 = file.path(getwd(), outfolder, fn)
 # invisible(dev.copy2pdf(file = outpdf7, out.type = "pdf")); invisible(dev.off())

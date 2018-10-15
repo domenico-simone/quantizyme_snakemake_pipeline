@@ -91,17 +91,20 @@ rule run_MSA:
 #
 rule clustering:
     input:
-        "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.clustalo.phy"
+        alignment = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.clustalo.phy",
+        fasta = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta"
         #expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID)
     output:
         #expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_hc_tree_1.pdf", model_dir=model_dir, projectID=projectID),
-        "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_hc_tree_1.pdf",
-        dir="{model_dir}/{projectID}_MODEL_{remove_lower_t}}_{remove_higher_t}"
+        "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_hc_tree_1.pdf"
         #expand("{projectID}_hc_tree_1.pdf", projectID=projectID),
         #dir=expand('{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}', model_dir=model_dir, projectID=projectID)
+    params:
+        projectID = "{projectID}",
+        outdir = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}"
     shell:
         """
-        Rscript --vanilla {scriptsDir}/quantizyme_model_clustering.R -a {input} -d {output.dir}
+        Rscript --vanilla {scriptsDir}/quantizyme_model_clustering.R -a {input.alignment} -i {input.fasta} -d {params.outdir} -p {params.projectID}
         """
 #
 # rule subtree:
