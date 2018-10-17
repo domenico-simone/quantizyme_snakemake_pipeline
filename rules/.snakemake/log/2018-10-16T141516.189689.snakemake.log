@@ -1,0 +1,3 @@
+WorkflowError in line 5 of /nfs4/my-gridfront/home1/done0001/quanty_test2/quantizyme_snakemake_pipeline/rules/subtreeing.snake:
+Config file config.yaml not found.
+  File "/nfs4/my-gridfront/home1/done0001/quanty_test2/quantizyme_snakemake_pipeline/rules/subtreeing.snake", line 5, in <module>

@@ -6,7 +6,7 @@ model_dir: "models"
 log_dir: "logs"
 #ref_gene_fasta: ""
 subtree_file: ""
-projectID: ""
+projectID: [ref_AA2]
 remove_seqs: FALSE
 remove_lower_t: 0
 remove_higher_t: 0

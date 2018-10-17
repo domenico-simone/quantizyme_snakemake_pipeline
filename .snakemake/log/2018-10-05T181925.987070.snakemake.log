@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 46 of /nfs4/my-gridfront/home1/done0001/quanty_test2/quantizyme_snakemake_pipeline/rules/quantizyme_model_preprocessing.rules:
+Missing input files for rule transcript_filtering:
+reference_transcripts/ref_AA2.fasta

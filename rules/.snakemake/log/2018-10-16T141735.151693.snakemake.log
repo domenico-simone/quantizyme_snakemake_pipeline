@@ -1,0 +1,5 @@
+Building DAG of jobs...
+MissingInputException in line 30 of /nfs4/my-gridfront/home1/done0001/quanty_test2/quantizyme_snakemake_pipeline/rules/subtreeing.snake:
+Missing input files for rule subtreeing:
+../models/ref_AA2_MODEL_200_1500/ref_AA2_start.fasta
+../models/ref_AA2_MODEL_200_1500/align1.phy

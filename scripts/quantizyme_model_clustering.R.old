@@ -13,8 +13,6 @@ option_list = list(
             help="alignment file [default= %default] (MANDATORY)", metavar="character"),
     make_option(c("-d", "--outdir"), type="character", default=NULL,
             help="outdir [default= %default] (MANDATORY)"),
-    make_option(c("-e", "--env_cluster_file"), type="character", default="envcluster.RData",
-            help="file where the cluster data will be saved [default= %default] (MANDATORY)"),
     make_option(c("-i", "--input"), type="character", default=NULL,
             help="input fasta file [default= %default] (MANDATORY)"),
     make_option(c("-p", "--projectID"), type="character", default=NULL,
@@ -32,26 +30,18 @@ opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
 
 out.phy = opt$a
-outdir = opt$outdir
-envfile = opt$e
+outdir = opt$d
 transcript.fasta = opt$i
 project.id = opt$p
-outpdf3 = paste(project.id, opt$tree1_pdf, sep = "_")
-outtxt3 = paste(project.id, opt$tree1_txt, sep = "_")
-outpdf7 = paste(project.id, opt$tree2_pdf, sep = "_")
-outtxt7 = paste(project.id, opt$tree2_txt, sep = "_")
-
-print(outdir)
-#stop("bwe.")
+outpdf3 = opt$tree1_pdf
+outtxt3 = opt$tree1_txt
+outpdf7 = opt$tree2_pdf
+outtxt7 = opt$tree2_txt
 
 if (is.null(opt$outdir)){
   print_help(opt_parser)
   stop("Please provide outdir name.\n", call.=FALSE)
 }
-
-# outdir
-# outpdf3
-# file.path(outdir, outpdf3)
 
 transcript.fas = read.fasta(transcript.fasta, seqtype = "DNA", as.string = TRUE, forceDNAtolower = FALSE)
 if(class(transcript.fas) != "list") stop(paste("\n Reading file '", transcript.fasta, "' not successful. \n\n"))
@@ -85,7 +75,7 @@ if(is.logical(labels)) cat("  Labels in the phylogenetic trees cannot be shown: 
 pdf(file.path(outdir, outpdf3))
 plot(cluster, labels = labels, hang = 0.1, ann = TRUE, main = paste("Phylogenetic tree, project", project.id), sub = "", xlab = "", ylab = "", font.main=1)
 mtext(side=1, paste(length(transcript.fas), "sequences"), col="blue", cex=0.9)
-invisible(dev.off())
+dev.off()
 # fn = paste(project.id, "hc_tree_1.png", sep="_")
 # outpng3 = file.path(getwd(), outfolder, fn)
 # invisible(dev.copy(png, file = outpng3, unit="px", width=960, height=960, res=120)); invisible(dev.off())
@@ -118,7 +108,7 @@ if(cluster2$Nnode < 25) {
 #X11(width=6, height=6)
 pdf(file.path(outdir, outpdf7))
 plot.phylo(cluster2, type = "unrooted", show.tip.label = labels, main = paste("Phylogenetic tree, project", project.id), font.main = 1)
-invisible(dev.off())
+dev.off()
 # fn = paste(project.id, "hc_tree_2.png", sep="_")
 # outpdf7 = file.path(getwd(), outfolder, fn)
 # invisible(dev.copy2pdf(file = outpdf7, out.type = "pdf")); invisible(dev.off())
@@ -135,8 +125,3 @@ write.tree(phy = cluster2, file = tree.file)
 cat(paste("  Neighbor joining tree (version 2) saved to '", outtxt7, "'\n\n"))
 # set.link(outhtml, tree.file, caption="Newick")
 # line.feed(outhtml, 1)
-
-# save cluster to file which will be used by subtreeing
-envcluster <- list()
-envcluster[["cluster"]] = cluster
-save(envcluster, file = envfile)

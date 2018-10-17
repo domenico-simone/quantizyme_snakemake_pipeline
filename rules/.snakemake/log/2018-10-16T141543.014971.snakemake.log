@@ -1,0 +1,4 @@
+Building DAG of jobs...
+WildcardError in line 30 of /nfs4/my-gridfront/home1/done0001/quanty_test2/quantizyme_snakemake_pipeline/rules/subtreeing.snake:
+Wildcards in input files cannot be determined from output files:
+'model_dir'

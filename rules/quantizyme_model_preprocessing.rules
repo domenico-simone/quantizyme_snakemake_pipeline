@@ -18,66 +18,121 @@ import sys, os
 
 rule quantizyme_model_all:
     input:
+        #"done.txt",
+        "out.zip",
+        #subtreeing("out.zip"),
+        #expand("logs/quantizyme_model_MSA/{projectID}_filtering_{remove_lower_t}_{remove_higher_t}_subtreeing.log", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
         #"{}/{}_MODEL_{}_{}/{}_start.fasta".format(model_dir, projectID, remove_lower_t, remove_higher_t, projectID),
         #"{}/{}_MODEL_{}_{}/align1.clustalo.phy".format(model_dir, projectID, remove_lower_t, remove_higher_t),
-        "{}/{}_MODEL_{}_{}/{}_hc_tree_1.pdf".format(model_dir, projectID, remove_lower_t, remove_higher_t, projectID),
+        ####"{}/{}_MODEL_{}_{}/{}_hc_tree_1.pdf".format(model_dir, projectID, remove_lower_t, remove_higher_t, projectID),
         #expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID),
         #expand("{model_dir_projectID}/{projectID}_start.fasta", model_dir_projectID=model_dir_projectID, projectID=projectID),
-        "{}/{}_transcript_length_distribution.pdf".format(reference_transcripts_length_distribution, projectID),
+        expand("reference_transcripts_length_distribution/{projectID}_transcript_length_distribution.pdf", projectID = projectID),
+        expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/envcluster.RData", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_annot_subtree_{wildcards.n}.fasta", model_dir=model_dir, projectID=projectID, n=subtrees, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+        #expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_hc_tree_1.pdf", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+        #"{}/{}_transcript_length_distribution.pdf".format(reference_transcripts_length_distribution, projectID),
         #expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID),
         #expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_hc_tree_1.pdf", model_dir=model_dir, projectID=projectID)
 
+# rule transcript_length_distribution:
+#     input:
+#         file="{}/{}.fasta".format(reference_transcripts_dir, projectID)
+#         # dir="reference_transcripts",
+#         # file="{projectID}.fasta",
+#     output:
+#         file="reference_transcripts_length_distribution/{projectID}_transcript_length_distribution.pdf"
+#         # dir='reference_transcripts_length_distribution',
+#         # file="{projectID}_transcript_length_distribution.pdf",
+#     log:
+#         "logs/quantizyme_model_figure1/{projectID}_quantizyme_model_figure1.log"
+#     shell:
+#         """
+#         Rscript --vanilla {scriptsDir}/quantizyme_model_figure1.R {output.file} {input.file} 2> {log}
+#         """
+
 rule transcript_length_distribution:
     input:
-        file="{}/{}.fasta".format(reference_transcripts_dir, projectID)
+        file=expand("reference_transcripts/{projectID}.fasta", projectID=projectID)
         # dir="reference_transcripts",
         # file="{projectID}.fasta",
     output:
-        file="reference_transcripts_length_distribution/{projectID}_transcript_length_distribution.pdf"
+        file=expand("reference_transcripts_length_distribution/{projectID}_transcript_length_distribution.pdf", projectID=projectID)
         # dir='reference_transcripts_length_distribution',
         # file="{projectID}_transcript_length_distribution.pdf",
     log:
-        "logs/quantizyme_model_figure1/{projectID}_quantizyme_model_figure1.log"
+        expand("logs/quantizyme_model_figure1/{projectID}_quantizyme_model_figure1.log", projectID=projectID)
     shell:
         """
         Rscript --vanilla {scriptsDir}/quantizyme_model_figure1.R {output.file} {input.file} 2> {log}
         """
 
+
+# rule transcript_filtering:
+#     input:
+#         file=expand("{reference_transcripts_dir}/{projectID}.fasta", reference_transcripts_dir=reference_transcripts_dir, projectID=projectID)
+#         #file="{}/{}.fasta".format(reference_transcripts_dir, projectID)
+#     output:
+# #        filtered_ref_sequences = "{proj_name}_MODEL/{proj_name}_start.fasta"
+#         #expand("{model_dir_projectID}/{projectID}_start.fasta", model_dir_projectID=model_dir_projectID, projectID=projectID),
+#         # expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID)
+#         file=expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+#     params:
+#         #outdir = {model_dir_projectID},
+#         outdir = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}",
+#         outplot = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_thresholded_distribution.pdf",
+#         filter_seqs = {remove_seqs},
+#         filter_lower_t = "{remove_lower_t}",
+#         filter_higher_t = "{remove_higher_t}"
+#     # log:
+#     #     "logs/quantizyme_model_transcript_filtering/{projectID}_filtering_{{remove_lower_t}}_{{remove_higher_t}}.log"
+#     shell:
+#         """
+#         Rscript --vanilla {scriptsDir}/quantizyme_model_ref_sequence_filtering.R -d {params.outdir} -p {projectID} -i {input.file} -o {output.file} -f {params.filter_seqs} -l {params.filter_lower_t} -u {params.filter_higher_t} --outplot={params.outplot} 2> {log}
+#         """
+
 rule transcript_filtering:
     input:
-        #expand("{reference_transcripts_dir}/{projectID}.fasta", reference_transcripts_dir=reference_transcripts_dir, projectID=projectID)
-        file="{}/{}.fasta".format(reference_transcripts_dir, projectID)
-        #"{ref_gene}.fasta"
+        file=expand("{reference_transcripts_dir}/{projectID}.fasta", reference_transcripts_dir=reference_transcripts_dir, projectID=projectID)
+        #file="{}/{}.fasta".format(reference_transcripts_dir, projectID)
     output:
 #        filtered_ref_sequences = "{proj_name}_MODEL/{proj_name}_start.fasta"
         #expand("{model_dir_projectID}/{projectID}_start.fasta", model_dir_projectID=model_dir_projectID, projectID=projectID),
         # expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID)
-        file="{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta"
+        file=expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        outplot=expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_thresholded_distribution.pdf", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
     params:
         #outdir = {model_dir_projectID},
-        outdir = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}",
-        outplot = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_thresholded_distribution.pdf",
+        #outdir = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}",
+        #outplot = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_thresholded_distribution.pdf",
         filter_seqs = {remove_seqs},
-        filter_lower_t = "{remove_lower_t}",
-        filter_higher_t = "{remove_higher_t}"
-    # log:
-    #     "logs/quantizyme_model_transcript_filtering/{projectID}_filtering_{{remove_lower_t}}_{{remove_higher_t}}.log"
+        filter_lower_t = {remove_lower_t},
+        filter_higher_t = {remove_higher_t}
+    log:
+        expand("logs/quantizyme_model_transcript_filtering/{projectID}_filtering_{remove_lower_t}_{remove_higher_t}.log", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
     shell:
         """
-        Rscript --vanilla {scriptsDir}/quantizyme_model_ref_sequence_filtering.R -d {params.outdir} -p {projectID} -i {input.file} -o {output.file} -f {params.filter_seqs} -l {params.filter_lower_t} -u {params.filter_higher_t} --outplot={params.outplot} 2> {log}
+        #!/bin/bash
+
+        export outdir=$(dirname {output.file})
+        echo {{outdir}}
+        Rscript --vanilla {scriptsDir}/quantizyme_model_ref_sequence_filtering.R -d {{outdir}} -p {projectID} -i {input.file} -o {output.file} -f {params.filter_seqs} -l {params.filter_lower_t} -u {params.filter_higher_t} --outplot={output.outplot} 2> {log}
         """
+##Rscript --vanilla {scriptsDir}/quantizyme_model_ref_sequence_filtering.R -d {params.outdir} -p {projectID} -i {input.file} -o {output.file} -f {params.filter_seqs} -l {params.filter_lower_t} -u {params.filter_higher_t} --outplot={params.outplot} 2> {log}
 
 rule run_MSA:
     input:
-        "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta"
+        file=expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
         #expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID)
     output:
-        "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.clustalo.phy"
+        alignment=expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        #"{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy"
         #expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID)
     threads: 20
-    # log:
-    #     #expand("logs/quantizyme_model_MSA/{projectID}_filtering_{{remove_lower_t}}_{{remove_higher_t}}.log", projectID=projectID)
-    #     "logs/quantizyme_model_MSA/{}_filtering_{}_{}.log".format(projectID, {remove_lower_t}, {remove_higher_t})
+    log:
+        #expand("logs/quantizyme_model_MSA/{projectID}_filtering_{{remove_lower_t}}_{{remove_higher_t}}.log", projectID=projectID)
+        expand("logs/quantizyme_model_MSA/{projectID}_filtering_{remove_lower_t}_{remove_higher_t}.log", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+        #"logs/quantizyme_model_MSA/{}_filtering_{}_{}.log".format(projectID, {remove_lower_t}, {remove_higher_t})
     # params:
     #     outdir = expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
     shell:
@@ -85,27 +140,96 @@ rule run_MSA:
         clustalo \
         --threads {threads} \
         -i {input} \
-        -o {output} \
+        -o {output.alignment} \
         --outfmt=phy  > {log} 2>&1
         """
 #
 rule clustering:
     input:
-        alignment = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.clustalo.phy",
-        fasta = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta"
+        alignment=expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
         #expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/align1.clustalo.phy", model_dir=model_dir, projectID=projectID)
     output:
         #expand("{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}/{projectID}_hc_tree_1.pdf", model_dir=model_dir, projectID=projectID),
-        "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_hc_tree_1.pdf"
+        #tree_pdf=expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_hc_tree_1.pdf", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        env_cluster_file=expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/envcluster.RData", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
         #expand("{projectID}_hc_tree_1.pdf", projectID=projectID),
         #dir=expand('{model_dir}/{projectID}_MODEL_{{remove_lower_t}}_{{remove_higher_t}}', model_dir=model_dir, projectID=projectID)
     params:
-        projectID = "{projectID}",
-        outdir = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}"
+        projectID = expand("{projectID}", projectID=projectID),
+        fasta = expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+        #outdir = {model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}
     shell:
         """
-        Rscript --vanilla {scriptsDir}/quantizyme_model_clustering.R -a {input.alignment} -i {input.fasta} -d {params.outdir} -p {params.projectID}
+        outdir=$(dirname {input.alignment})
+        Rscript --vanilla {scriptsDir}/quantizyme_model_clustering.R -a {input.alignment} -i {params.fasta} -d ${{outdir}} -p {params.projectID} -e {output.env_cluster_file}
         """
+
+rule subtreeing1:
+    input:
+        alignment=expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        env_cluster_file=expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/envcluster.RData", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+    output:
+        subtree = expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_annot_subtree_{wildcards.n}.fasta", model_dir=model_dir, projectID=projectID, n=subtrees, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+    params:
+        fasta = expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta", model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        projectID = expand("{projectID}", projectID=projectID),
+        subtrees = expand("{n}", n=subtrees)
+        #outdir = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}"
+    shell:
+        """
+        outdir=$(dirname {input.alignment})
+        Rscript --vanilla {scriptsDir}/quantizyme_model_cut_subtree.R -a {input.alignment} -i {params.fasta} -n {params.subtrees} -e {input.env_cluster_file} -s {output.subtree}
+        """
+
+rule compress_out_folder:
+    input:
+        expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_annot_subtree_{wildcards.n}.fasta", model_dir=model_dir, projectID=projectID, n=subtrees, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+    output:
+        "out.zip"
+    shell:
+        """
+        gzip -c {input} > {output}
+        """
+
+# subworkflow subtreeing:
+#     #workdir: "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}"
+#     workdir: "."
+#     snakefile: "./subtreeing.snake"
+
+# rule collect_subtreeing:
+#     input:
+#         subtreeing("out.zip")
+#     output:
+#         expand("logs/quantizyme_model_MSA/{projectID}_filtering_{remove_lower_t}_{remove_higher_t}_subtreeing.log", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+#     shell:
+#         """
+#         touch {output}
+#         #ls {input} > {output}
+#         """
+
+# rule subtreeing:
+#     input:
+#         alignment = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy".format(model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+#         fasta = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta".format(model_dir=model_dir, projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+#     output:
+#         expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_annot_subtree_{n}.fasta", model_dir=model_dir, projectID=projectID, n=subtrees, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+#     params:
+#         projectID = "{projectID}",
+#         outdir = "{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}"
+#     shell:
+#         """
+#         Rscript --vanilla {scriptsDir}/quantizyme_model_cut_subtree.R -a {input.alignment} -i {input.fasta}
+#         """
+#
+# rule compress_out_folder:
+#     input:
+#         expand("{model_dir}/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_annot_subtree_{n}.fasta", model_dir=model_dir, projectID=projectID, n=subtrees, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
+#     output:
+#         "out.zip"
+#     shell:
+#         """
+#         gzip -c {input} > {output}
+#         """
 #
 # rule subtree:
 #     input: name="" if config["subtree_list"] else ...
