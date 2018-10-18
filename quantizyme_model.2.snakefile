@@ -5,6 +5,7 @@ scriptsDir = pipeline_dir + "/scripts"
 reference_transcripts_dir = config['reference_transcripts_dir']
 model_dir = config['model_dir']
 projectID = config['projectID']
+nSubtrees = config['subtrees']
 subtrees = range(1,config['subtrees']+1)
 remove_seqs = config['remove_seqs']
 remove_lower_t = config['remove_lower_t']
@@ -16,9 +17,8 @@ rule all:
     input:
         expand("reference_transcripts_length_distribution/{projectID}_transcript_length_distribution.pdf", projectID=projectID),
         #model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_MODEL.zip"
-        expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_annot_subtree_{n}.fasta", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t, n=subtrees),
+        expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/subtrees_" + str(nSubtrees) + "/{projectID}_subtree_{n}.fasta", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t, n=subtrees),
         expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_MODEL.zip", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
-
 
 rule transcript_length_distribution:
     input:
@@ -58,7 +58,7 @@ rule run_MSA:
         file=model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta"
     output:
         alignment= model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy"
-    threads: 40
+    threads: 20
     log:
         "logs/quantizyme_model_MSA/{projectID}_filtering_{remove_lower_t}_{remove_higher_t}.log"
     shell:
@@ -78,6 +78,7 @@ rule clustering:
     params:
         projectID = "{projectID}",
         fasta = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta"
+        #subtrees = "{n}"
     shell:
         """
         outdir=$(dirname {input.alignment})
@@ -87,23 +88,47 @@ rule clustering:
 rule subtreeing1:
     input:
         alignment = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy",
-        env_cluster_file = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/envcluster.RData"
+        env_cluster_file = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/envcluster.RData",
+        # alignment = expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        # env_cluster_file = expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/envcluster.RData", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
     output:
-        subtree_fasta = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_annot_subtree_{n}.fasta",
+        subtree_fasta = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/subtrees_" + str(nSubtrees) + "/{projectID}_subtree_{n}.fasta",
+        #subtree_fasta = expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/subtrees_" + str(nSubtrees) + "/{projectID}_subtree_{n}.fasta", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t, n=subtrees)
         #model_params = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/quantizyme_model_params.RData",
     params:
         fasta = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta",
         projectID = "{projectID}",
         subtrees = "{n}"
+        # fasta = expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
+        # projectID = expand("{projectID}", projectID=projectID),
+        # subtrees = expand("{n}", n=subtrees)
     shell:
         """
         outdir=$(dirname {input.alignment})
-        Rscript --vanilla {scriptsDir}/quantizyme_model_cut_subtree.R -a {input.alignment} -i {params.fasta} -n {params.subtrees} -e {input.env_cluster_file}
+        Rscript --vanilla {scriptsDir}/quantizyme_model_cut_subtree.R -a {input.alignment} -i {params.fasta} -n {params.subtrees} -p {params.projectID} -e {input.env_cluster_file} -d ${{outdir}}
+        """
+
+rule run_MSA_subtree:
+    input:
+        subtree_fasta = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/subtrees_" + str(nSubtrees) + "/{projectID}_subtree_{n}.fasta"
+        #file=model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta"
+    output:
+        alignment= model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/subtrees_" + str(nSubtrees) + "/out_{n}.phy"
+    threads: 10
+    log:
+        "logs/quantizyme_model_MSA/{projectID}_filtering_{remove_lower_t}_{remove_higher_t}_subtrees_" + str(nSubtrees) + "_{n}.log"
+    shell:
+        """
+        clustalo \
+        --threads {threads} \
+        -i {input} \
+        -o {output.alignment} \
+        --outfmt=phy  > {log} 2>&1
         """
 
 rule compress_out_folder:
     input:
-        model_params = expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_annot_subtree_{n}.fasta", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t, n=subtrees)
+        model_params = expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/subtrees_" + str(nSubtrees) + "/{projectID}_subtree_{n}.fasta", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t, n=subtrees)
         #model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_annot_subtree_{n}.fasta"
         #expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_annot_subtree_{n}.fasta", projectID=projectID, n=subtrees, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t)
     output:
