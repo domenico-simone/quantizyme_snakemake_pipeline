@@ -12,3 +12,4 @@ remove_lower_t: 0
 remove_higher_t: 0
 subtrees: 3
 nr.trials.random.picking: 10
+subgroup.percent: 30 
