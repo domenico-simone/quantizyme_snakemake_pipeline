@@ -179,10 +179,11 @@ rule subtreeing2:
         # fasta = expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t),
         # projectID = expand("{projectID}", projectID=projectID),
         # subtrees = expand("{n}", n=subtrees)
+    threads: 10
     shell:
         """
         outdir=$(dirname {input.alignment})
-        Rscript --vanilla {scriptsDir}/quantizyme_model_cut_subtree2.R -a {input.alignment} -i {params.fasta} -t {params.trials} -p {params.projectID} -d ${{outdir}} -s {params.subgroup_percent} -z {output.flag_file}
+        Rscript --vanilla {scriptsDir}/quantizyme_model_cut_subtree2.R -a {input.alignment} -i {params.fasta} -t {params.trials} -p {params.projectID} -d ${{outdir}} -s {params.subgroup_percent} -z {output.flag_file} --clustalo_threads {threads} --hmmbuild_threads {threads}
         """
 
 # rule compress_out_folder:

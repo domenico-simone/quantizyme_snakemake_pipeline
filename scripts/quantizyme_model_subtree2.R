@@ -25,6 +25,10 @@ option_list = list(
             help="subtree_percent_group [default= %default] (MANDATORY)")
     make_option(c("-z", "--done_file"), type="integer", default=NULL,
             help="flag file [default= %default] (MANDATORY)")
+    make_option("--clustalo_threads", type="integer", default=1,
+            help="number of threads to be used by clustalo [default= %default] (MANDATORY)")
+    make_option("--hmmbuild_threads", type="integer", default=1,
+            help="number of threads to be used by hmmbuild [default= %default] (MANDATORY)")
     )
 
 opt_parser = OptionParser(option_list=option_list)
@@ -39,6 +43,55 @@ outfolder = opt$outdir
 i = opt$n
 subgroup.percent = opt$s
 flag_file = opt$z
+clustalo.nr.cpu = opt$clustalo_threads)
+hmmbuild.nr.cpu = opt$hmmbuild_threads)
+
+align.clustal <- function(mfas, seqtype = NULL, outfile = NULL, outform = "PHYLIP", outorder = "ALIGNED", nr.boot = 100, logf = NULL, clustalo.nr.cpu = 1) {
+	## uwe.menzel@slu.se  uwe.menzel@gmail.com
+    nr.cpu <-
+	clustalw.location <- Sys.which("clustalo")
+	if(clustalw.location == "") stop("\n\n  align.clustal: program 'clustalw' not found.\n\n")
+	if(!file.exists(mfas)) stop(paste("\n\n  align.clustal: file ' ", mfas, " ' does not exist.\n\n", sep=""))
+	if(is.null(outfile)) outfile = paste(mfas, "align.phy", sep="_")
+	if(is.null(seqtype)) stop("\n\n  align.clustal: argument 'seqtype' must be one of 'DNA' or 'PROTEIN' \n\n")
+	if(!seqtype %in% c("DNA", "PROTEIN")) stop("\n\n  align.clustal: argument 'seqtype' must be one of 'DNA' or 'PROTEIN' \n\n")
+	if(!outorder %in% c("ALIGNED", "INPUT")) stop("\n\n  align.clustal: argument 'outorder' must be one of 'ALIGNED' or 'INPUT' \n\n")
+	if(!outform %in% c("CLUSTAL", "GCG", "GDE", "PHYLIP", "PIR", "NEXUS", "FASTA"))
+		stop("\n\n  align.clustal: argument 'outform' must be one of 'CLUSTAL', 'GCG', 'GDE', 'PHYLIP', 'PIR', 'NEXUS' or 'FASTA' \n\n")
+	if(is.null(logf)) logf = paste(gsub(":", "_", gsub(" ", "_", date())), "clustalw.log", sep="_")	# "Wed_Jun_21_11_30_46_2017_clustalw.log"
+	#command = paste("clustalw -INFILE=", mfas, " -ALIGN -TREE -TYPE=", seqtype, " -OUTPUT=", outform, " -BOOTSTRAP=", nr.boot, " -OUTFILE=", outfile, "  > ", logf, " 2>&1", sep="")
+	command = paste("clustalo --threads=", nr.cpu, " -i ", mfas, " -o ", outform, " > ", logf, " 2>&1", sep="")
+	cat(paste("  Running clustalo on", basename(mfas), "; Logfile is", basename(logf), "\n"))
+	res <- try(system(command, intern = FALSE, ignore.stdout = FALSE, ignore.stderr = FALSE, wait = TRUE, input = NULL))
+	if(res != 0) stop("\n\n  align.clustal: Sorry, no success.\n\n")
+	result = list()
+	result[["input"]] = mfas
+	result[["alignment"]] = outfile
+	result[["format"]] = outform
+	return(result)
+}
+
+build.hmm <- function(alignment = NULL, outhmm = NULL, hmm.name = NULL, summary.file = NULL, new.alignment = NULL, informat = "PHYLIP", hmmbuild.nr.cpu = 1) {
+	## uwe.menzel@slu.se  uwe.menzel@gmail.com
+    hmmbuild.nr.cpu = hmmbuild.nr.cpu
+	hmmbuild.location <- Sys.which("hmmbuild")
+	if(hmmbuild.location == "") stop("  build.hmm: program 'hmmbuild' not found.\n\n")
+    if(!file.exists(alignment)) stop("  build.hmm: alignment file not found.\n\n")
+	if(is.null(outhmm)) outhmm = paste(alignment, "hmm", sep=".")
+	if(is.null(hmm.name)) hmm.name = "HMM"
+	if(is.null(summary.file))  summary.file = paste(hmm.name, "summary.txt", sep = "_")
+	if(is.null(new.alignment)) new.alignment = paste(hmm.name, "HMMer_alignment.phy", sep = "_")
+	cat(paste("  Building profile HMM from", basename(alignment), " ... writing to", basename(outhmm), "\n"))
+	command = paste("hmmbuild --cpu", hmmbuild.nr.cpu, "--dna --fast  -n", hmm.name, "-o", summary.file, "-O", new.alignment, "--informat", informat, outhmm,  alignment)
+	res <- try(system(command, intern = FALSE, ignore.stdout = FALSE, ignore.stderr = FALSE, wait = TRUE, input = NULL))
+	if(res != 0) stop("\n\n  build.hmm: Sorry, no success.\n\n")
+	result = list()
+	result[["input"]] = alignment
+	result[["output"]] = outhmm
+	result[["summary"]] = summary.file
+	result[["alignment"]] = new.alignment
+	return(result)
+}
 
 pick_one_from_each_cluster <- function(clusters, silent = FALSE) {
 	## uwe.menzel@slu.se  uwe.menzel@gmail.com
@@ -64,6 +117,8 @@ pick_one_from_each_cluster <- function(clusters, silent = FALSE) {
 }
 
 ## +++ Calculate distance matrix for each of the subtree alignments:
+
+## +++ Calculate distance matrix for subtree alignment:
 
 aln <- read.alignment(out.phy, format="phylip", forceToLower = FALSE)
 if(class(aln) != "alignment") stop(paste(" Could not read alignment '", out.phy, "'.\n\n"))
@@ -144,7 +199,8 @@ dev.off()
 # insert.text(outhtml, text="Picking from subtrees ('Thinning'):", color="black")
 # line.feed(outhtml, 1)
 
-thinned = logical(length = nrHMM)
+#thinned = logical(length = nrHMM)
+thinned = FALSE
 subtree.group = list()
 
 picked.fn = matrix(NA, nrow = nrHMM, ncol = nr.trials.random.picking)
@@ -184,8 +240,8 @@ if(num.clust == 1) {
     out.phy = file.path(getwd(), outfolder, phyfile.fn[i, 1])
     clustal.log = paste("subtree", i, "no_trial_clustal.log", sep="_")
     log.fn = file.path(getwd(), outfolder, clustal.log)
-    aln.res <- align.clustal(fas.fn, seqtype = "DNA", outfile = out.phy, outform = "PHYLIP", outorder = "ALIGNED", nr.boot = 100, logf = log.fn)
-    if(!file.exists(out.phy))  stop(paste(" Could not complete clustalw alignment for subtree", i, " (no thinning for this subgroup, no trials).\n\n"))
+    aln.res <- align.clustal(fas.fn, seqtype = "DNA", outfile = out.phy, outform = "phy", outorder = "tree-order", logf = log.fn, clustalo.nr.cpu = clustalo.nr.cpu)
+    if(!file.exists(out.phy))  stop(paste(" Could not complete clustalo alignment for subtree", i, " (no thinning for this subgroup, no trials).\n\n"))
 
 	phy.fn = phyfile.fn[i, 1]
 	phy.fn = file.path(getwd(), outfolder, phy.fn)
