@@ -170,7 +170,7 @@ rule subtreeing2:
         #subtree_fasta = expand(model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/subtrees_" + str(nSubtrees) + "/{projectID}_subtree_{n}.fasta", projectID=projectID, remove_lower_t=remove_lower_t, remove_higher_t=remove_higher_t, n=subtrees)
         #model_params = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/quantizyme_model_params.RData",
     params:
-        fasta = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta",
+        fasta = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_subtree_{n}.fasta",
         projectID = "{projectID}",
         #projectID = lambda wildcards: {projectID},
         subtrees = "{n}",
@@ -183,7 +183,7 @@ rule subtreeing2:
     shell:
         """
         outdir=$(dirname {input.alignment})
-        Rscript --vanilla {scriptsDir}/quantizyme_model_cut_subtree2.R -a {input.alignment} -i {params.fasta} -t {params.trials} -p {params.projectID} -d ${{outdir}} -s {params.subgroup_percent} -z {output.flag_file} --clustalo_threads {threads} --hmmbuild_threads {threads}
+        Rscript --vanilla {scriptsDir}/quantizyme_model_subtree2.R -a {input.alignment} -i {params.fasta} -n {params.subtrees} -t {params.trials} -p {params.projectID} -d ${{outdir}} -s {params.subgroup_percent} -z {output.flag_file} --clustalo_threads {threads} --hmmbuild_threads {threads}
         """
 
 # rule compress_out_folder:
