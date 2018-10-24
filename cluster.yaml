@@ -1,0 +1,15 @@
+__default__:
+    time: 1:00:00
+    threads: 20
+
+run_MSA:
+    time: 1:00:00
+    threads: 18
+
+run_MSA_subtree:
+    time: 1:00:00
+    threads: 10
+
+subtreeing2:
+    time: 1:00:00
+    threads: 15

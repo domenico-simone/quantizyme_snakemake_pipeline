@@ -36,18 +36,13 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
 
-print(opt)
-
 out.phy <- opt$a
 envcluster_file = opt$e
-#nrHMM = as.integer(opt$n)
 nrHMM = opt$n_subtrees
 transcript.fasta = opt$i
 project.id = opt$p
 outfolder = opt$outdir
-i = opt$n
 subgroup.percent = opt$s
-# nr.trials.random.picking = as.integer(opt$t)
 nr.trials.random.picking = opt$n_trials
 flag_file = opt$done_file
 clustalo.nr.cpu = opt$clustalo_threads
@@ -124,12 +119,8 @@ pick_one_from_each_cluster <- function(clusters, silent = FALSE) {
 	return(picked)
 }
 
-## +++ Calculate distance matrix for each of the subtree alignments:
-print(nrHMM)
-print(nr.trials.random.picking)
-
 ## +++ Calculate distance matrix for subtree alignment:
-print("Calculate distance matrix for subtree alignment")
+cat("Calculate distance matrix for subtree alignment")
 transcript.fas = read.fasta(transcript.fasta, seqtype = "DNA", as.string = TRUE, forceDNAtolower = FALSE)
 aln <- read.alignment(out.phy, format="phylip", forceToLower = FALSE)
 if(class(aln) != "alignment") stop(paste(" Could not read alignment '", out.phy, "'.\n\n"))
@@ -193,7 +184,7 @@ if(length(subtree.cluster[[nrHMM]]$labels) < 25) {
 if(is.logical(labels)) cat("  Labels in the subtree cannot be shown: too many sequences.\n")
 
 #fn = paste("subtree_cluster_", i, ".png", sep="")
-fn = paste("subtree_cluster_", nrHMM, ".png", sep="")
+fn = paste("subtree_cluster_", nrHMM, ".pdf", sep="")
 fn = file.path(outfolder, fn)
 # pdf(filename = fn, units = "px", width = 960, height = 960, res=120)
 pdf(fn)
@@ -235,19 +226,6 @@ hmmfile.fn = matrix(NA, nrow = nrHMM, ncol = nr.trials.random.picking)
 rownames(hmmfile.fn) = paste("subtree", 1:nrHMM, sep="_")
 colnames(hmmfile.fn) = paste("trial", 1:nr.trials.random.picking, sep="_")
 
-cat("Subdividing in groups\n")
-cat(typeof(num.clust))
-
-if(num.clust == 1){
-    print("BWE_1")
-
-    print("KTM_1")
-} else {
-    print("BWE_TANTI")
-    # thinned = TRUE
-    # print(paste("  Cluster", nrHMM, " - subdividing into", num.clust, "subgroups\n"))
-}
-
 # Parse file to get sequences from
 subtree = list()
 subtree[[nrHMM]] <- read.fasta(transcript.fasta, seqtype = "DNA", as.string = TRUE, forceDNAtolower = FALSE)
@@ -286,7 +264,7 @@ if(num.clust == 1){
     summary.file = file.path(outfolder, summary.file)
     new.alignment = paste(HMM.name, "new_align.txt", sep = "_")
     new.alignment = file.path(outfolder, new.alignment)
-    hmmbuild.res <- build.hmm(alignment = phy.fn, outhmm = out.hmm, hmm.name = HMM.name, summary.file = summary.file, new.alignment = new.alignment, informat = "PHYLIP", nr.cpu = hmmbuild.nr.cpu)
+    hmmbuild.res <- build.hmm(alignment = phy.fn, outhmm = out.hmm, hmm.name = HMM.name, summary.file = summary.file, new.alignment = new.alignment, informat = "PHYLIP", hmmbuild.nr.cpu = hmmbuild.nr.cpu)
     if(!file.exists(out.hmm))  stop(paste(" Could not complete hmmbuild for subtree", i, " (no thinning for this subgroup, no trials).\n\n"))
     # link on webpage:
     # insert.blanks(outhtml,2)
@@ -383,8 +361,8 @@ if(num.clust == 1){
     # rownames(to_pick) = paste("cl", 1:num.clust, sep="_")
     # if(sum(is.na(to_pick)) != 0) stop("  Could not find indices for sequences to pick from subgroups.\n\n")
 }
-print("\n")
-print("End of the script")
+# print("\n")
+# print("End of the script")
 file.create(flag_file, overwrite=TRUE)
 
 #######
@@ -490,7 +468,6 @@ file.create(flag_file, overwrite=TRUE)
 # rownames(hmmfile.fn) = paste("subtree", 1:nrHMM, sep="_")
 # colnames(hmmfile.fn) = paste("trial", 1:nr.trials.random.picking, sep="_")
 
-cat("\n")
 # for (i in 1:nrHMM) {
 # 	if(!thinned[i]) {
 # 		phy.fn = phyfile.fn[i, 1]
