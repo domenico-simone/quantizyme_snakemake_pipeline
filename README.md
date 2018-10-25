@@ -16,7 +16,7 @@ conda install git
 
 ### fetch repo
 # shouldn't be harder than this but git gets stuck
-git clone -b ultralight https://github.com/domenico-simone/quantizyme_snakemake_pipeline.git
+# git clone -b ultralight https://github.com/domenico-simone/quantizyme_snakemake_pipeline.git
 # so use this more complicated procedure
 curl -OL https://github.com/domenico-simone/quantizyme_snakemake_pipeline/archive/ultralight.zip
 unzip ultralight.zip
