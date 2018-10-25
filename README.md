@@ -75,3 +75,13 @@ nohup snakemake -rp \
 -j 100 --cluster-config cluster.yaml --cluster 'qsub -V -l h_rt=3:00:00 -pe smp {cluster.threads} -cwd -j y' \
 -s quantizyme_model.2.snakefile &> quantizyme_200_1600_3_10.2.log &
 ```
+
+### Get the DAG representation of the pipeline
+
+```bash
+snakemake --dag \
+--config projectID=ref_AA2 remove_lower_t=200 remove_higher_t=1600 remove_seqs=TRUE subtrees=3 \
+-j 100 --cluster-config cluster.yaml --cluster 'qsub -V -l h_rt=3:00:00 -pe smp {cluster.threads} -cwd -j y' \
+-s quantizyme_model.2.snakefile | dot -Tpdf > quantizyme_model_dag.pdf
+```
+
