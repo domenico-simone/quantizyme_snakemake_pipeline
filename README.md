@@ -11,23 +11,26 @@ Follow instructions at https://conda.io/docs/user-guide/install/linux.html
 ### Installation of the pipeline
 
 ```bash
-### update git
+# update git
 conda install git
 
-### fetch repo
-# shouldn't be harder than this but git gets stuck
+# fetch repo
 git clone -b ultralight https://github.com/domenico-simone/quantizyme_snakemake_pipeline.git
-# so use this more complicated procedure
-curl -OL https://github.com/domenico-simone/quantizyme_snakemake_pipeline/archive/ultralight.zip
-unzip ultralight.zip
-mv quantizyme_snakemake_pipeline-ultralight quantizyme_snakemake_pipeline
 
 # install environment
-cd quantizyme_snakemake_pipeline
 conda env create -n quantizyme_model -f environment.yaml
+
+# activate environment
+source activate quantizyme_model
 ```
 
 ## Running the pipeline
+
+Setup environment
+
+```bash
+# load appropriate R version
+module load R/3.2.0
 
 Since the pipeline is not interactive, it can be useful to get the transcript length distribution first, display the plot and set up the most suitable parameters for
 
