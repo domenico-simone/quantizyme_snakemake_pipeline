@@ -1,8 +1,31 @@
 # Quantizyme on the Mykopat grid
 
-## Installation of conda
+## Installation of conda environment
 
-## Installation of the pipeline
+The grid implementation of the Mykopat pipeline is deployed in a conda environment, i.e. a virtual environment with all the needed tools/modules (including hmmer and clustal-omega). Installing conda is therefore essential, before installing the pipeline.
+
+### Installation of Anaconda
+
+Follow instructions at https://conda.io/docs/user-guide/install/linux.html
+
+### Installation of the pipeline
+
+```bash
+### update git
+conda install git
+
+### fetch repo
+# shouldn't be harder than this but git gets stuck
+git clone -b ultralight https://github.com/domenico-simone/quantizyme_snakemake_pipeline.git
+# so use this more complicated procedure
+curl -OL https://github.com/domenico-simone/quantizyme_snakemake_pipeline/archive/ultralight.zip
+unzip ultralight.zip
+mv quantizyme_snakemake_pipeline-ultralight quantizyme_snakemake_pipeline
+
+# install environment
+cd quantizyme_snakemake_pipeline
+conda env create -n quantizyme_model -f environment.yaml
+```
 
 ## Running the pipeline
 
