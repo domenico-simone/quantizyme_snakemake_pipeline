@@ -63,7 +63,7 @@ export projectID=ref_AA2
 
 snakemake -rp \
 --config projectID=${projectID} \
--s quantizyme_model.snake \
+-s quantizyme_model.2.snakefile \
 reference_transcripts_length_distribution/${projectID}_transcript_length_distribution.pdf
 ```
 
