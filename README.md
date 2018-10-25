@@ -25,6 +25,9 @@ mv quantizyme_snakemake_pipeline-ultralight quantizyme_snakemake_pipeline
 # install environment
 cd quantizyme_snakemake_pipeline
 conda env create -n quantizyme_model -f environment.yaml
+
+# activate environment
+source activate quantizyme_model
 ```
 
 ### Setup working directory
@@ -48,6 +51,13 @@ ln -s ${PFOLDER}/config.2.yaml .
 ```
 
 ## Running the pipeline
+
+To run the pipeline, you need to use R/3.2.0.
+
+```bash
+# load appropriate R version
+module load R/3.2.0
+```
 
 Since the pipeline is not interactive, it can be useful to get the transcript length distribution first, display the plot and set up the most suitable parameters for
 
