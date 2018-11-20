@@ -1,4 +1,4 @@
-pipeline_dir: "/nfs4/my-gridfront/home1/done0001/quanty_test2/quantizyme_snakemake_pipeline"
+pipeline_dir: "/home/domenico/Research/slu/quantizyme_snakemake_pipeline"
 #reference_transcripts: "reference_transcripts.txt"
 reference_transcripts_dir: "reference_transcripts"
 reference_transcripts_length_distribution: "reference_transcripts_length_distribution"
@@ -12,4 +12,4 @@ remove_lower_t: 0
 remove_higher_t: 0
 subtrees: 3
 nr.trials.random.picking: 10
-subgroup.percent: 30 
+subgroup.percent: 30
