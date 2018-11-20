@@ -2,3 +2,5 @@ projectID	remove_seqs	remove_lower_t	remove_higher_t	subtrees	nr_trials_random_p
 ref_AA2	TRUE	200	1500	3	10	30
 ref_AA3	TRUE	200	1600	3	10	30
 ref_AA2	TRUE	300	1500	3	10	30
+ref_AA2	TRUE	300	1500	4	10	30
+ref_AA2	TRUE	300	1500	4	10	40
