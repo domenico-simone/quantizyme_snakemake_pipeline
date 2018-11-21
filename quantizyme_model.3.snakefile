@@ -10,10 +10,17 @@ model_dir = config['model_dir']
 def get_out_files(df, model_dir="models"):
     outpaths = []
     for row in df.itertuples():
-        outpaths.append("{}/{}_MODEL_{}_{}_subtrees_{}_trials_{}_subgroup_{}_MODEL.tar.gz".format(model_dir, \
+        if str(getattr(row, "remove_seqs")) == "True":
+            outpaths.append("{}/{}_MODEL_{}_{}_subtrees_{}_trials_{}_subgroup_{}_MODEL.tar.gz".format(model_dir, \
                                                                                 getattr(row, "projectID"), \
                                                                                 getattr(row, "remove_lower_t"), \
                                                                                 getattr(row, "remove_higher_t"), \
+                                                                                getattr(row, "subtrees"), \
+                                                                                getattr(row, "nr_trials_random_picking"), \
+                                                                                getattr(row, "subgroup_percent")))
+        elif str(getattr(row, "remove_seqs")) == "False":
+            outpaths.append("{}/{}_MODEL_0_0_subtrees_{}_trials_{}_subgroup_{}_MODEL.tar.gz".format(model_dir, \
+                                                                                getattr(row, "projectID"), \
                                                                                 getattr(row, "subtrees"), \
                                                                                 getattr(row, "nr_trials_random_picking"), \
                                                                                 getattr(row, "subgroup_percent")))
@@ -30,6 +37,7 @@ def get_projectIDs(df):
     return list(set(df['projectID']))
 
 analysis_tab = pd.read_table("analysis.tab", sep = "\t", comment='#')
+print(analysis_tab)
 
 localrules: all, transcript_length_distribution, transcript_filtering, subtreeing1, compress_out_folder
 
@@ -40,7 +48,8 @@ rule all:
 
 rule transcript_length_distribution:
     input:
-        file=expand(reference_transcripts_dir + "/{projectID}.fasta", projectID = get_projectIDs(analysis_tab))
+        #file=expand(reference_transcripts_dir + "/{projectID}.fasta", projectID = get_projectIDs(analysis_tab))
+        file=reference_transcripts_dir + "/{projectID}.fasta"
     output:
         file="reference_transcripts_length_distribution/{projectID}_transcript_length_distribution.pdf"
     log:
@@ -52,7 +61,8 @@ rule transcript_length_distribution:
 
 rule transcript_filtering:
     input:
-        file = reference_transcripts_dir + "/{projectID}.fasta"
+        file = reference_transcripts_dir + "/{projectID}.fasta",
+        inplot="reference_transcripts_length_distribution/{projectID}_transcript_length_distribution.pdf"
     output:
         file= model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta",
         outplot= model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_thresholded_distribution.pdf"
@@ -70,7 +80,14 @@ rule transcript_filtering:
 
         export outdir=$(dirname {output.file})
         echo ${{outdir}}
-        Rscript --vanilla {scriptsDir}/quantizyme_model_ref_sequence_filtering.R -d ${{outdir}} -p {params.projectID} -i {input.file} -o {output.file} -f {params.filter_seqs} -l {params.filter_lower_t} -u {params.filter_higher_t} --outplot={output.outplot} 2> {log}
+        
+        if [[ {wildcards.remove_lower_t} -eq 0 && {wildcards.remove_higher_t} -eq 0 ]] 
+        then
+            cat {input.file} > {output.file}
+            cp {input.inplot} {output.outplot}
+        else
+            Rscript --vanilla {scriptsDir}/quantizyme_model_ref_sequence_filtering.R -d ${{outdir}} -p {params.projectID} -i {input.file} -o {output.file} -f {params.filter_seqs} -l {params.filter_lower_t} -u {params.filter_higher_t} --outplot={output.outplot} 2> {log}
+        fi
         """
 
 rule run_MSA:

@@ -1,4 +1,4 @@
-pipeline_dir: "/home/domenico/Research/slu/quantizyme_snakemake_pipeline"
+pipeline_dir: "/home/adm2/Research/slu/quantizyme_snakemake_pipeline"
 #reference_transcripts: "reference_transcripts.txt"
 reference_transcripts_dir: "reference_transcripts"
 reference_transcripts_length_distribution: "reference_transcripts_length_distribution"
