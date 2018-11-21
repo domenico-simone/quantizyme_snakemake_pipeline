@@ -19,12 +19,20 @@ def get_out_files(df, model_dir="models"):
                                                                                 getattr(row, "subgroup_percent")))
     return outpaths
 
+def get_transcript_length_distribution_plots(df, plot_dir="reference_transcripts_length_distribution"):
+    outplots = []
+    q = list(set(analysis_tab['projectID']))
+    for ref in q:
+        outplots.append("{}/{}_transcript_length_distribution.pdf".format(plot_dir, ref))
+    return outplots
+
 analysis_tab = pd.read_table("analysis.tab", sep = "\t", comment='#')
 
 localrules: all, transcript_length_distribution, transcript_filtering, clustering, subtreeing1, compress_out_folder
 
 rule all:
     input:
+        transcript_length_distribution_plots = get_transcript_length_distribution_plots(analysis_tab),
         model_archives = get_out_files(analysis_tab, model_dir=model_dir)
 
 rule transcript_length_distribution:
