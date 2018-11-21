@@ -31,7 +31,7 @@ def get_projectIDs(df):
 
 analysis_tab = pd.read_table("analysis.tab", sep = "\t", comment='#')
 
-localrules: all, transcript_length_distribution, transcript_filtering, clustering, subtreeing1, compress_out_folder
+localrules: all, transcript_length_distribution, transcript_filtering, subtreeing1, compress_out_folder
 
 rule all:
     input:
