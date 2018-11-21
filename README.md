@@ -69,13 +69,13 @@ Since the pipeline is not interactive, it can be useful to get the transcript le
 ### Get transcript distribution
 
 ```bash
-snakemake -prF --until transcript_length_distribution -s quantizyme_model.3.snakefile
+snakemake -pr --until transcript_length_distribution -s quantizyme_model.3.snakefile
 ```
 
 ### Run the whole MODEL pipeline
 
 ```bash
-nohup snakemake -prF \
+nohup snakemake -pr \
 -j 100 --cluster-config cluster.yaml --cluster 'qsub -V -l h_rt=3:00:00 -pe smp {cluster.threads} -cwd -j y' \
 -s quantizyme_model.3.snakefile &> quantizyme_model.log &
 ```
