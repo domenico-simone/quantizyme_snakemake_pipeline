@@ -43,8 +43,8 @@ rule transcript_length_distribution:
         file=expand(reference_transcripts_dir + "/{projectID}.fasta", projectID = get_projectIDs(analysis_tab))
     output:
         file="reference_transcripts_length_distribution/{projectID}_transcript_length_distribution.pdf"
-    # log:
-    #     "logs/quantizyme_model_figure1/{projectID}_quantizyme_model_figure1.log"
+    log:
+        "logs/quantizyme_model_figure1/{projectID}_quantizyme_model_figure1.log"
     shell:
         """
         Rscript --vanilla {scriptsDir}/quantizyme_model_figure1.R {output.file} {input.file} 2> {log}
