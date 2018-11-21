@@ -21,10 +21,13 @@ def get_out_files(df, model_dir="models"):
 
 def get_transcript_length_distribution_plots(df, plot_dir="reference_transcripts_length_distribution"):
     outplots = []
-    q = list(set(analysis_tab['projectID']))
+    q = list(set(df['projectID']))
     for ref in q:
         outplots.append("{}/{}_transcript_length_distribution.pdf".format(plot_dir, ref))
     return outplots
+
+def get_projectIDs(df):
+    return list(set(df['projectID']))
 
 analysis_tab = pd.read_table("analysis.tab", sep = "\t", comment='#')
 
@@ -37,11 +40,11 @@ rule all:
 
 rule transcript_length_distribution:
     input:
-        file=reference_transcripts_dir + "/{projectID}.fasta"
+        file=expand(reference_transcripts_dir + "/{projectID}.fasta", projectID = get_projectIDs(analysis_tab))
     output:
         file="reference_transcripts_length_distribution/{projectID}_transcript_length_distribution.pdf"
-    log:
-        "logs/quantizyme_model_figure1/{projectID}_quantizyme_model_figure1.log"
+    # log:
+    #     "logs/quantizyme_model_figure1/{projectID}_quantizyme_model_figure1.log"
     shell:
         """
         Rscript --vanilla {scriptsDir}/quantizyme_model_figure1.R {output.file} {input.file} 2> {log}
