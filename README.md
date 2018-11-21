@@ -69,30 +69,20 @@ Since the pipeline is not interactive, it can be useful to get the transcript le
 ### Get transcript distribution
 
 ```bash
-export projectID=ref_AA2
-
-snakemake -rp \
---config projectID=${projectID} \
--s quantizyme_model.2.snakefile \
-reference_transcripts_length_distribution/${projectID}_transcript_length_distribution.pdf
+snakemake -prF --until transcript_length_distribution -s quantizyme_model.3.snakefile
 ```
 
 ### Run the whole MODEL pipeline
 
 ```bash
-nohup snakemake -rp \
---config projectID=ref_AA2 remove_lower_t=200 remove_higher_t=1600 remove_seqs=TRUE subtrees=3 \
+nohup snakemake -prF \
 -j 100 --cluster-config cluster.yaml --cluster 'qsub -V -l h_rt=3:00:00 -pe smp {cluster.threads} -cwd -j y' \
--s quantizyme_model.2.snakefile &> quantizyme_200_1600_3_10.2.log &
+-s quantizyme_model.3.snakefile &> quantizyme_model.log &
 ```
 
 ### Get the DAG representation of the pipeline
 
 ```bash
 snakemake --dag \
---config projectID=ref_AA2 remove_lower_t=200 remove_higher_t=1600 remove_seqs=TRUE subtrees=3 \
--j 100 --cluster-config cluster.yaml --cluster 'qsub -V -l h_rt=3:00:00 -pe smp {cluster.threads} -cwd -j y' \
--s quantizyme_model.2.snakefile | dot -Tpdf > quantizyme_model_dag.pdf
+-s quantizyme_model.3.snakefile | dot -Tsvg > quantizyme_model.dag.svg
 ```
-
-Added today
