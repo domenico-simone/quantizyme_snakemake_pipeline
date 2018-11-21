@@ -14,7 +14,7 @@ remove_lower_t = config['remove_lower_t']
 remove_higher_t = config['remove_higher_t']
 subgroup_percent = config['subgroup.percent']
 
-localrules: all, transcript_length_distribution, transcript_filtering, clustering, subtreeing1, compress_out_folder
+localrules: all, transcript_length_distribution, transcript_filtering, subtreeing1, compress_out_folder
 
 rule all:
     input:
