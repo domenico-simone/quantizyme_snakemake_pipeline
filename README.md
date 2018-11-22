@@ -2,69 +2,112 @@
 
 ## Installation of conda environment
 
-The grid implementation of the Mykopat pipeline is deployed in a conda environment, i.e. a virtual environment with all the needed tools/modules (including hmmer and clustal-omega). Installing conda is therefore essential, before installing the pipeline.
+The grid implementation of the quantizyme workflow is deployed in a conda environment, *i.e.* a virtual environment with all the needed tools/modules (including hmmer and clustal-omega). Installing conda is therefore essential, before installing the workflow.
 
 ### Installation of Anaconda
 
 Follow instructions at https://conda.io/docs/user-guide/install/linux.html
 
-### Installation of the pipeline
+### Installation of the workflow
+
+#### Standard installation
+
+Clone repo and create working directory
 
 ```bash
-### update git
-conda install git
-
-### fetch repo
-# shouldn't be harder than this but git gets stuck
-# git clone -b ultralight https://github.com/domenico-simone/quantizyme_snakemake_pipeline.git
-# so use this more complicated procedure
-curl -OL https://github.com/domenico-simone/quantizyme_snakemake_pipeline/archive/ultralight.zip
-unzip ultralight.zip
-mv quantizyme_snakemake_pipeline-ultralight quantizyme_snakemake_pipeline
-
-# install environment
+git clone -b analysis_tab https://github.com/domenico-simone/quantizyme_snakemake_pipeline.git
 cd quantizyme_snakemake_pipeline
+
+# create conda env based on environment.yaml file
 conda env create -n quantizyme_model -f environment.yaml
 
 # activate environment
 source activate quantizyme_model
 ```
 
-### Setup working directory
-
-Setup a working directory:
-
-- create input data folder (`wdir/reference_transcripts`)
-- symlink some pipeline files
+#### Git clone gets stuck?
 
 ```bash
-export PFOLDER=/path/to/pipeline/folder
-cd /path/to/working/directory
+### update git
+conda install git
 
-# create input data folder
-mkdir -p reference_transcripts
+curl -OL https://github.com/domenico-simone/quantizyme_snakemake_pipeline/archive/analysis_tab.zip
+unzip analysis_tab.zip
+mv quantizyme_snakemake_pipeline-analysis_tab quantizyme_snakemake_pipeline
 
-# create symlinks
-ln -s ${PFOLDER}/quantizyme_model.2.snakefile .
-ln -s ${PFOLDER}/cluster.yaml .
-ln -s ${PFOLDER}/config.2.yaml .
+# install environment
+cd quantizyme_snakemake_pipeline
+conda env create -n quantizyme_model -f environment.yaml
 ```
 
-## Running the pipeline
+### Setup a working directory
 
-To run the pipeline, you need to use R/3.2.0.
+Create working directory `path/to/working/directory` and copy/symlink files needed to run the workflow. This is automatically performed by the script `wdir_setup.sh`, which takes as single argument the path of the directory where you want to run the workflow. If the directory name is not provided, the working directory `quantizyme_runs` will be created as subdirectory of the current one.
+
+```bash
+# setup working directory
+bash wdir_setup.sh /path/to/working/directory
+```
+
+Assuming a directory name like `test2`, the structure of the newly created directory should be
+
+```bash
+test2
+├── analysis.tab
+├── cluster.yaml
+├── config.yaml
+├── quantizyme_model.3.snakefile -> /home/adm2/Research/slu/quantizyme_snakemake_pipeline/quantizyme_model.3.snakefile
+└── reference_transcripts
+
+```
+
+## Running the workflow
+
+Go to the working directory you have created and activate the conda environment
+
+```bash
+cd /path/to/working/directory
+source activate quantizyme_model
+```
+
+To run the workflow, you need to use R/3.2.0.
 
 ```bash
 # load appropriate R version
 module load R/3.2.0
 ```
 
-Since the pipeline is not interactive, it can be useful to get the transcript length distribution first, display the plot and set up the most suitable parameters for
+Since the workflow is not interactive, it can be useful to get the transcript length distribution first, display the plot and set up the most suitable parameters for
 
 - `remove_seqs` (default: FALSE)
 - `remove_lower_t` (default: 0)
 - `remove higher_t` (default: 0)
 
+### Tell the workflow what to do: compile the `analysis.tab` datasheet
+
+The file `analysis.tab` will be used by the workflow to infer all the parameters used in the generation of gene models. For each model, one row defines the parameters used. A sample of the structure of the `analysis.tab` file is provided as follows:
+
+| projectID | remove_seqs | remove_lower_t | remove_higher_t | subtrees | nr_trials_random_picking | subgroup_percent |
+|:---------:|:-----------:|:--------------:|:---------------:|:--------:|:------------------------:|:----------------:|
+| ref_AA2   | TRUE        | 200            | 1500            | 3        | 10                       | 30               |
+| ref_AA3   | TRUE        | 200            | 1600            | 3        | 10                       | 30               |
+| ref_AA2   | TRUE        | 300            | 1500            | 3        | 10                       | 30               |
+| ref_AA2   | TRUE        | 300            | 1500            | 4        | 10                       | 30               |
+| ref_AA2   | TRUE        | 300            | 1500            | 4        | 10                       | 40               |
+| ref_AA3   | FALSE       | 200            | 1600            | 3        | 10                       | 30               |
+
+In this case, the workflow will compute five models, based on the specified parameters. You can edit the `analysis.tab` directly as text file, or copy it in a spreadsheet (eg in Excel) and exporting it back as text file (with **tab** separator).
+
+**Note on parameters**: if you set the `remove_seqs` option as FALSE, the `remove_lower_t` and `remove_higher_t` options will make no difference in the setup.
+
+### Get the DAG representation of the workflow
+
+Before executing the workflow, it could be a good idea to display a diagram of it. The following command creates a plot of your “directed acyclic graph” (namely DAG, a plot of all of the rules Snakemake will execute), which you can view using any picture viewing program.
+
+```bash
+snakemake --dag \
+-s quantizyme_model.3.snakefile | dot -Tsvg > quantizyme_model.dag.svg
+```
 
 ### Get transcript distribution
 
@@ -72,7 +115,7 @@ Since the pipeline is not interactive, it can be useful to get the transcript le
 snakemake -pr --until transcript_length_distribution -s quantizyme_model.3.snakefile
 ```
 
-### Run the whole MODEL pipeline
+### Run the whole MODEL workflow
 
 ```bash
 nohup snakemake -pr \
@@ -80,9 +123,8 @@ nohup snakemake -pr \
 -s quantizyme_model.3.snakefile &> quantizyme_model.log &
 ```
 
-### Get the DAG representation of the pipeline
+#### Notes on the execution and re-execution of the workflow...
 
-```bash
-snakemake --dag \
--s quantizyme_model.3.snakefile | dot -Tsvg > quantizyme_model.dag.svg
-```
+... and, as a consequence, on the beauty of Snakemake :-) .
+
+- It is not possible to have the workflow running more than once in the same directory. If you wish to do so, please set up another working directory (by following the instructions) 
