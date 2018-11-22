@@ -1,8 +1,9 @@
 import pandas as pd
 
-configfile: "config.2.yaml"
+configfile: "config.yaml"
 
 pipeline_dir = config['pipeline_dir']
+#print(pipeline_dir)
 scriptsDir = pipeline_dir + "/scripts"
 reference_transcripts_dir = config['reference_transcripts_dir']
 model_dir = config['model_dir']
@@ -37,7 +38,7 @@ def get_projectIDs(df):
     return list(set(df['projectID']))
 
 analysis_tab = pd.read_table("analysis.tab", sep = "\t", comment='#')
-print(analysis_tab)
+#print(analysis_tab)
 
 localrules: all, transcript_length_distribution, transcript_filtering, subtreeing1, compress_out_folder
 

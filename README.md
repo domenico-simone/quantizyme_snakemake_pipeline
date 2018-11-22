@@ -25,7 +25,7 @@ conda env create -n quantizyme_model -f environment.yaml
 source activate quantizyme_model
 ```
 
-#### Git clone gets stuck?
+#### If the standard installation gets stuck?
 
 ```bash
 ### update git
@@ -60,6 +60,8 @@ test2
 └── reference_transcripts
 
 ```
+
+MEMO: add the adding of reference transcripts in the appropriate folder.
 
 ## Running the workflow
 
