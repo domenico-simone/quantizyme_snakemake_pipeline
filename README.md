@@ -127,4 +127,5 @@ nohup snakemake -pr \
 
 ... and, as a consequence, on the beauty of Snakemake :-) .
 
-- It is not possible to have the workflow running more than once in the same directory. If you wish to do so, please set up another working directory (by following the instructions) 
+- It is not possible to have the workflow running more than once in the same directory. If you wish to do so, please set up another working directory (by following the instructions)
+- If you wish to compute a model on the same gene but with different parameters, you can just add it to a pre-existing `analysis.tab` file. Assuming you are keeping all the output files of previous runs, the workflow will automatically understand which files need to be generated. This means that, if you are computing a model for which only the number of subtrees is changed (compared to another model already computed), the workflow won't need to perform the first multiple sequence alignment again (which is usually the most time consuming step!!!), since it will re-use the one previously performed.
