@@ -1,6 +1,7 @@
 import pandas as pd
 
 configfile: "config.match.yaml"
+model_dir = config['model_dir']
 res_dir = config['results_dir']
 
 # Steps:
