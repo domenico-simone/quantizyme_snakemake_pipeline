@@ -13,7 +13,7 @@ def get_venn_files(df, res_dir="match"):
     for row in df.itertuples():
         dataset = getattr(row, "dataset")
         model_base = getattr(row, "model").replace("_MODEL.tar.gz", "")
-        outpaths.append("{}/{}_{}/Venn_diagram.png".format(res_dir, dataset, model_base))
+        outpaths.append("{}/{}-{}/Venn_diagram.png".format(res_dir, dataset, model_base))
     return outpaths
 
 # def get_model_params(model_name):
@@ -36,20 +36,26 @@ rule all:
 rule nhmmer:
     input:
         dataset_file = "read_datasets/{dataset}.fasta",
-        model_file = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/subtrees_{subtrees}/trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/{projectID}_subtree_{n}_trials_{nr_trials_random_picking}_profile.hmm"
+        model_file = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/subtrees_{subtrees}/trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/subtree_{n}_trial_{nr_trials_random_picking}_profile.hmm"
     output:
-        nhmmer_outputs = res_dir + "/{dataset}_{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/subtree_{n}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}_matches.tbl"
+        nhmmer_outputs = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/subtree_{n}_trial_{t}_subgroup_{subgroup_percent}_matches.tbl"
+    params:
+        nhmmerEvalue = 1,
+        nhmmer_alignment = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/subtree_{n}_trial_{t}_subgroup_{subgroup_percent}_nhmmer.msa"
+    log:
+        "logs/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/subtree_{n}_trial_{t}_subgroup_{subgroup_percent}_matches.log"
     shell:
         """
-        bwe
+        nhmmer --cpu {threads} -o {log} -A {params.nhmmer_alignment} -E {params.nhmmerEvalue} --tblout {output.nhmmer_outputs} --tformat fasta {input.model_file} {input.dataset_file} 
         """
 
 rule process_nhmmer_results:
     input:
-        nhmmer_outputs = lambda wildcards: expand(res_dir + "/{dataset}_{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/subtree_{n}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}_matches.tbl", \
+        nhmmer_outputs = lambda wildcards: expand(res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/subtree_{n}_trial_{t}_subgroup_{subgroup_percent}_matches.tbl", \
                                                         dataset = wildcards.dataset, projectID = wildcards.projectID, remove_lower_t = wildcards.remove_lower_t, remove_higher_t = wildcards.remove_higher_t, \
+                                                        t = range(1,int(wildcards.nr_trials_random_picking)+1), \
                                                         subtrees = wildcards.subtrees, nr_trials_random_picking = wildcards.nr_trials_random_picking, \
                                                         n = range(1,int(wildcards.subtrees)+1), subgroup_percent = wildcards.subgroup_percent)
     output:
-        venn = get_venn_files(analysis_match_tab, res_dir = res_dir)
+        venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.png"
     shell: "touch bwe"
