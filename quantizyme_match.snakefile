@@ -34,7 +34,7 @@ rule all:
 
 rule nhmmer:
     input:
-        dataset_file = "read_datasets/{dataset}.fasta"
+        dataset_file = "read_datasets/{dataset}.fasta",
         model_file = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/subtrees_{subtrees}/trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/{projectID}_subtree_{n}_trials_{nr_trials_random_picking}_profile.hmm"
     output:
         nhmmer_outputs = res_dir + "/{dataset}_{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/subtree_{n}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}_matches.tbl"
