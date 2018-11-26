@@ -8,6 +8,18 @@ suppressMessages(library(phangorn))
 suppressMessages(library(ape))
 suppressMessages(library(optparse))
 
+put.warning <- function(file, message) {
+  if(!file.exists(file)) {
+    stop(paste("\n  File", file, "does not exist.\n\n"))
+  } else {
+    sink(file, append=T)
+  }
+  cat("\n")
+  cat(paste('<font color="red">', paste("  WARNING:", message), '</font><br>'))
+  cat("\n")
+  sink()
+}
+
 option_list = list(
     make_option(c("-a", "--alignment_file"), type="character", default=NULL,
         help="alignment file [default= %default] (MANDATORY)", metavar="character"),
@@ -69,7 +81,7 @@ if(subtree_by_list) {
 	}
 	if(sum != nr.seqs) {
 		cat(" WARNING: SUBTREEing did not pick up all reads.\n\n")
-		put.warning(outhtml, paste("SUBTREEing did not pick up all reads listed in '", subtrees.txt, "'"))
+		#put.warning(outhtml, paste("SUBTREEing did not pick up all reads listed in '", subtrees.txt, "'"))
 	}
 	if(length(subtree) != nrHMM) stop(" Not all subtrees found.\n\n")
 	if(length(subtree.fn) != nrHMM) stop(" Not all subtrees found.\n\n")
@@ -220,6 +232,7 @@ if(subtree_by_list) {
 		read.names = names(sub.trees[ind])
 		avail.names = names(transcript.fas)
 		subtree[[i]] = transcript.fas[intersect(read.names, avail.names)]
+    cat(paste("Number of sequences in subtree ", i, " : ", length(subtree[[i]])))
 		sum = sum + length(subtree[[i]])
 		if(sum(is.na(names(subtree[[i]]))) != 0) stop(" Fetching subset of fasta file failed.\n\n")
 		subtree.fn[[i]] = paste(project.id, "_subtree_", i, ".fasta", sep="")
@@ -227,8 +240,10 @@ if(subtree_by_list) {
 		write.fasta(subtree[[i]], names = names(subtree[[i]]), file.out = out.fas, open = "w", nbchar = 60, as.string = TRUE)
 	}
 	if(sum != nr.seqs) {
+    cat(paste("Total number of sequences from subtrees: ", sum, sep = ""))
+    cat(paste("Total number of sequences from original sequence file: ", sum, sep = ""))
 		cat(" WARNING: SUBTREEing did not pick up all reads.\n\n")
-		put.warning(outhtml, paste("SUBTREEing did not pick up all reads listed in '", subtrees.txt, "'"))
+		#put.warning(outhtml, paste("SUBTREEing did not pick up all reads listed in '", subtrees.txt, "'"))
 	}
 
 	if(length(subtree) != nrHMM) stop(" Not all subtrees found (subtreeing by clustering).\n\n")
