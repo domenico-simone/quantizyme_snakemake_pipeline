@@ -3,6 +3,8 @@ import pandas as pd
 configfile: "config.match.yaml"
 model_dir = config['model_dir']
 res_dir = config['results_dir']
+pipeline_dir = config['pipeline_dir']
+scriptsDir = pipeline_dir + "/scripts"
 
 # Steps:
 # - ...
@@ -29,6 +31,8 @@ def get_venn_files(df, res_dir="match"):
 
 analysis_match_tab = pd.read_table("analysis.match.tab", sep = "\t", comment='#')
 
+localrules: process_nhmmer_results
+
 rule all:
     input:
         venn = get_venn_files(analysis_match_tab, res_dir = res_dir)
@@ -42,6 +46,7 @@ rule nhmmer:
     params:
         nhmmerEvalue = 1,
         nhmmer_alignment = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/subtree_{n}_trial_{t}_subgroup_{subgroup_percent}_nhmmer.msa"
+    threads: 15
     log:
         "logs/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/subtree_{n}_trial_{t}_subgroup_{subgroup_percent}_matches.log"
     shell:
@@ -58,4 +63,17 @@ rule process_nhmmer_results:
                                                         n = range(1,int(wildcards.subtrees)+1), subgroup_percent = wildcards.subgroup_percent)
     output:
         venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.png"
-    shell: "touch bwe"
+    params:
+        subtrees = lambda wildcards: wildcards.subtrees,
+        nr_trials_random_picking = lambda wildcards: wildcards.nr_trials_random_picking,
+        subgroup_percent = lambda wildcards: wildcards.subgroup_percent
+    shell:
+        """
+        outdir=$(dirname $(echo "{input.nhmmer_outputs}" | awk '{{print $1}}'))
+        Rscript --vanilla {scriptsDir}/quantizyme_match_process_nhmmer_results.R -s {params.subtrees} -t {params.nr_trials_random_picking} -d ${{outdir}} -u {params.subgroup_percent} -o {output.venn}
+        #echo ${{outdir}}
+        #touch {output.venn}
+        """
+
+
+
