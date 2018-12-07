@@ -15,7 +15,7 @@ def get_venn_files(df, res_dir="match"):
     for row in df.itertuples():
         dataset = getattr(row, "dataset")
         model_base = getattr(row, "model").replace("_MODEL.tar.gz", "")
-        outpaths.append("{}/{}-{}/Venn_diagram.png".format(res_dir, dataset, model_base))
+        outpaths.append("{}/{}-{}/Venn_diagram.pdf".format(res_dir, dataset, model_base))
     return outpaths
 
 # def get_model_params(model_name):
@@ -51,7 +51,7 @@ rule nhmmer:
         "logs/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/subtree_{n}_trial_{t}_subgroup_{subgroup_percent}_matches.log"
     shell:
         """
-        nhmmer --cpu {threads} -o {log} -A {params.nhmmer_alignment} -E {params.nhmmerEvalue} --tblout {output.nhmmer_outputs} --tformat fasta {input.model_file} {input.dataset_file} 
+        nhmmer --cpu {threads} -o {log} -A {params.nhmmer_alignment} -E {params.nhmmerEvalue} --tblout {output.nhmmer_outputs} --tformat fasta {input.model_file} {input.dataset_file}
         """
 
 rule process_nhmmer_results:
@@ -62,7 +62,7 @@ rule process_nhmmer_results:
                                                         subtrees = wildcards.subtrees, nr_trials_random_picking = wildcards.nr_trials_random_picking, \
                                                         n = range(1,int(wildcards.subtrees)+1), subgroup_percent = wildcards.subgroup_percent)
     output:
-        venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.png"
+        venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.pdf"
     params:
         subtrees = lambda wildcards: wildcards.subtrees,
         nr_trials_random_picking = lambda wildcards: wildcards.nr_trials_random_picking,
@@ -74,6 +74,3 @@ rule process_nhmmer_results:
         #echo ${{outdir}}
         #touch {output.venn}
         """
-
-
-
