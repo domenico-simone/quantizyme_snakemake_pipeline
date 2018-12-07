@@ -62,7 +62,7 @@ rule process_nhmmer_results:
                                                         subtrees = wildcards.subtrees, nr_trials_random_picking = wildcards.nr_trials_random_picking, \
                                                         n = range(1,int(wildcards.subtrees)+1), subgroup_percent = wildcards.subgroup_percent)
     output:
-        venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.pdf"
+        venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.png"
     params:
         subtrees = lambda wildcards: wildcards.subtrees,
         nr_trials_random_picking = lambda wildcards: wildcards.nr_trials_random_picking,
@@ -82,6 +82,6 @@ rule report:
         report = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}_match_report.html"
     shell:
         """
-        match_report.py
+        match_report.py -o {output.report} --venn={input.venn} 
         pandoc 
         """

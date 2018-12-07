@@ -4,10 +4,6 @@ import datetime, random, sys
 import numpy as np
 import argparse
 
-def usage():
-    print("""match_report.py <subtrees> <trials> <table_ref_element> """)
-    sys.exit("\nYeah.")
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--html-report",            help="HTML output")
 parser.add_argument("--md-report",              help="Markdown output")
@@ -16,9 +12,11 @@ parser.add_argument("--report-template",        help="Report template")
 parser.add_argument("-s", "--subtrees",         help="Number of subtrees in the used model")
 parser.add_argument("-t", "--trials",           help="Number of subsamplings in the used model")
 parser.add_argument("--results-directory",      help="Directory with results")
+parser.add_argument("--venn",                   help="Venn diagram of results overlap")
 parser.parse_args()
 
-usage()
+parser.print_help(sys.stderr)
+sys.exit("Y e a h.")
 
 # markdown template data
 simple_cell = "| {}"
