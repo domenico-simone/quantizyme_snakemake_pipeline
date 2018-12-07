@@ -74,3 +74,14 @@ rule process_nhmmer_results:
         #echo ${{outdir}}
         #touch {output.venn}
         """
+
+rule report:
+    input:
+        venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.pdf"
+    output:
+        report = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}_match_report.html"
+    shell:
+        """
+        parse_results.py
+        pandoc
+        """
