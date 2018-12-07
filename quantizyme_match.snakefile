@@ -83,5 +83,5 @@ rule report:
     shell:
         """
         parse_results.py
-        pandoc
+        pandoc 
         """
