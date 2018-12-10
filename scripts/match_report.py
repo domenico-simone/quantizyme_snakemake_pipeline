@@ -37,7 +37,7 @@ header_cell = "| trial{trial} "
 cell = "| [{n_hits}][{subtree}_{trial}] "
 header_line = "|:---:|"
 
-table_ref_element = "[{subtree}_{trial}]: subtree_{subtree}_trial_{trial}.txt"
+table_ref_element = "[{subtree}_{trial}]: subtree_{subtree}_trial_{trial}_matched_reads.txt"
 ###
 
 # get today's date
