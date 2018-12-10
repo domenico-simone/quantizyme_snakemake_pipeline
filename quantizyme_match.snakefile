@@ -15,7 +15,15 @@ def get_venn_files(df, res_dir="match"):
     for row in df.itertuples():
         dataset = getattr(row, "dataset")
         model_base = getattr(row, "model").replace("_MODEL.tar.gz", "")
-        outpaths.append("{}/{}-{}/Venn_diagram.pdf".format(res_dir, dataset, model_base))
+        outpaths.append("{}/{}-{}/Venn_diagram.jpg".format(res_dir, dataset, model_base))
+    return outpaths
+
+def get_report_files(df, res_dir="match"):
+    outpaths = []
+    for row in df.itertuples():
+        dataset = getattr(row, "dataset")
+        model_base = getattr(row, "model").replace("_MODEL.tar.gz", "")
+        outpaths.append("{}/{}-{}/{}-{}_match_report.html".format(res_dir, dataset, model_base, dataset, model_base))
     return outpaths
 
 # def get_model_params(model_name):
@@ -35,7 +43,8 @@ localrules: process_nhmmer_results
 
 rule all:
     input:
-        venn = get_venn_files(analysis_match_tab, res_dir = res_dir)
+        venn = get_venn_files(analysis_match_tab, res_dir = res_dir),
+        html_report = get_report_files(analysis_match_tab, res_dir = res_dir)
 
 rule nhmmer:
     input:
@@ -79,9 +88,18 @@ rule report:
     input:
         venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.jpg"
     output:
-        report = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}_match_report.html"
+        html_report = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}_match_report.html"
+    params:
+        subtrees = lambda wildcards: wildcards.subtrees,
+        trials = lambda wildcards: wildcards.nr_trials_random_picking,
+        css = "{}/templates/github.css".format(pipeline_dir),
+        report_template = "{}/templates/report_template.md".format(pipeline_dir)
     shell:
         """
-        match_report.py -o {output.report} --venn={input.venn} 
-        pandoc 
+        {scriptsDir}/match_report.py --html-report={output.html_report} \
+            -s {params.subtrees} \
+            -t {params.trials} \
+            --venn={input.venn} \
+            --css={params.css} \
+            --report-template={params.report_template} 
         """
