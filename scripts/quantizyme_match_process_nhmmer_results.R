@@ -1,11 +1,11 @@
-required.libs = c("seqinr", "phangorn", "ape")
-installed.libs = rownames(installed.packages())
-missing.libs = setdiff(required.libs, installed.libs) 
-if(length(missing.libs) > 0) stop(paste("  Missing the following R-libraries:", paste(missing.libs, collapse = "  "), "\n\n"))
+# required.libs = c("seqinr", "phangorn", "ape")
+# installed.libs = rownames(installed.packages())
+# missing.libs = setdiff(required.libs, installed.libs) 
+# if(length(missing.libs) > 0) stop(paste("  Missing the following R-libraries:", paste(missing.libs, collapse = "  "), "\n\n"))
 
-suppressMessages(library(seqinr))          
-suppressMessages(library(phangorn))        
-suppressMessages(library(ape))             
+#suppressMessages(library(seqinr))          
+#suppressMessages(library(phangorn))        
+#suppressMessages(library(ape))             
 suppressMessages(library(optparse))
 
 # Quite surely we don't need this function anymore
@@ -493,11 +493,12 @@ if(length(matches.subtree) < 2) {
     fn = venn.output
 	outpng = fn
     outpdf = gsub("png", "pdf", fn)
+    outjpg = gsub("png", "jpg", fn)
     #outpng
     #fn = paste(project.id, "Venn_diagram.png", sep="_")	 
 	#outpng = file.path(getwd(), outfolder, fn)
-	#png(outpng, unit="px", width=960, height=960, res=120)
-    pdf(outpdf)
+    jpeg(outjpg, unit="px", width=960, height=960, res=120)
+    #pdf(outpdf)
     vennPlot(counts = counts)#, file = outpng, unit="px", width=960, height=960, res=120
     dev.off()
     #invisible(dev.copy(png, file = outpng, unit="px", width=960, height=960, res=120)); invisible(dev.off()) 

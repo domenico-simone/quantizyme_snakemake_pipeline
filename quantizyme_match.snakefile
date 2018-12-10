@@ -62,7 +62,7 @@ rule process_nhmmer_results:
                                                         subtrees = wildcards.subtrees, nr_trials_random_picking = wildcards.nr_trials_random_picking, \
                                                         n = range(1,int(wildcards.subtrees)+1), subgroup_percent = wildcards.subgroup_percent)
     output:
-        venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.png"
+        venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.jpg"
     params:
         subtrees = lambda wildcards: wildcards.subtrees,
         nr_trials_random_picking = lambda wildcards: wildcards.nr_trials_random_picking,
@@ -77,7 +77,7 @@ rule process_nhmmer_results:
 
 rule report:
     input:
-        venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.pdf"
+        venn = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/Venn_diagram.jpg"
     output:
         report = res_dir + "/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}/{dataset}-{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}_subtrees_{subtrees}_trials_{nr_trials_random_picking}_subgroup_{subgroup_percent}_match_report.html"
     shell:
