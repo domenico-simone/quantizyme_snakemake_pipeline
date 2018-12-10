@@ -497,7 +497,7 @@ if(length(matches.subtree) < 2) {
     #outpng
     #fn = paste(project.id, "Venn_diagram.png", sep="_")	 
 	#outpng = file.path(getwd(), outfolder, fn)
-    jpeg(outjpg, unit="px", width=960, height=960, res=120)
+    jpeg(outjpg, unit="px", width=960, height=960, res=120, quality=100)
     #pdf(outpdf)
     vennPlot(counts = counts)#, file = outpng, unit="px", width=960, height=960, res=120
     dev.off()
