@@ -93,7 +93,12 @@ rule report:
         subtrees = lambda wildcards: wildcards.subtrees,
         trials = lambda wildcards: wildcards.nr_trials_random_picking,
         css = "{}/templates/github.css".format(pipeline_dir),
-        report_template = "{}/templates/report_template.md".format(pipeline_dir)
+        report_template = "{}/templates/report_template.md".format(pipeline_dir),
+        dataset = lambda wildcards: wildcards.dataset,
+        projectID = lambda wildcards: wildcards.projectID,
+        remove_lower_t = lambda wildcards: wildcards.remove_lower_t,
+        remove_higher_t = lambda wildcards: wildcards.remove_higher_t,
+        subgroup_percent = lambda wildcards: wildcards.subgroup_percent
     shell:
         """
         {scriptsDir}/match_report.py --html-report={output.html_report} \
@@ -101,5 +106,10 @@ rule report:
             -t {params.trials} \
             --venn={input.venn} \
             --css={params.css} \
-            --report-template={params.report_template}
+            --report-template={params.report_template} \
+            --dataset={params.dataset} \
+            --reference-gene={params.projectID} \
+            --remove-lower-t={params.remove_lower_t} \
+            --remove-higher-t={params.remove_higher_t} \
+            --subgroup-percent={params.subgroup_percent}
         """
