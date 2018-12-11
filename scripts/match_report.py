@@ -9,10 +9,15 @@ parser.add_argument("--html-report",            help="HTML output")
 #parser.add_argument("--md-report",              help="Markdown output")
 parser.add_argument("--css",                    help="CSS stylesheet for HTML output")
 parser.add_argument("--report-template",        help="Report template")
-parser.add_argument("-s", "--subtrees",         help="Number of subtrees in the used model")
-parser.add_argument("-t", "--trials",           help="Number of subsamplings in the used model")
+parser.add_argument("-s", "--subtrees",         help="Number of subtrees in the gene model")
+parser.add_argument("-t", "--trials",           help="Number of subsamplings in the gene model")
 #parser.add_argument("--results-directory",      help="Directory with results")
 parser.add_argument("--venn",                   help="Venn diagram of results overlap")
+parser.add_argument("--dataset",                help="Read dataset")
+parser.add_argument("--reference-gene",         help="Reference gene")
+parser.add_argument("--remove-lower-t",         help="Lower threshold for sequence length in gene model")
+parser.add_argument("--remove-higher-t",        help="Higher threshold for sequence length in gene model")
+parser.add_argument("--subgroup-percent",       help="Subgrouping percent in gene model")
 
 args = parser.parse_args()
 
@@ -22,11 +27,14 @@ css = args.css
 report_template = args.report_template
 subtrees = int(args.subtrees)
 trials = int(args.trials)
-#results_dir = args.results_directory
 venn = args.venn
 results_dir = os.path.split(venn)[0]
-# print(args)
-# print(html_report)
+# add to parser
+dataset = args.dataset
+reference_gene = args.reference_gene
+remove_lower_t = args.remove_lower_t
+remove_higher_t = args.remove_higher_t
+subgroup_percent = args.subgroup_percent
 
 ### markdown hit table template data
 # The report template is in a separate file.
@@ -47,11 +55,11 @@ today = "{year} - {month} - {day}\n".format(year = date.year, month = date.month
 # # table generation
 # # subtrees are rows, trials are cols
 # t = np.empty(shape = (subtrees, trials))
-# 
+#
 # for i in range(trials):
 #     for j in range(subtrees):
 #         t[j,i] = random.randint(3000,5000)
-# 
+#
 # print(t)
 
 table_string = ""
@@ -94,7 +102,16 @@ for j in range(subtrees):
 # report file (Markdown format)
 report_template_txt = open(report_template, 'r').read()
 r = open(md_report, 'w')
-r.write(report_template_txt.format(date = date, subtrees = subtrees, trials = trials, table = table_string, table_refs = '\n'.join(table_refs)))
+r.write(report_template_txt.format(date = date, \
+                                    dataset = dataset, \
+                                    reference_gene = reference_gene, \
+                                    remove_lower_t = remove_lower_t, \
+                                    remove_higher_t = remove_higher_t, \
+                                    subtrees = subtrees, \
+                                    trials = trials, \
+                                    subgroup_percent = subgroup_percent, \
+                                    table = table_string, \
+                                    table_refs = '\n'.join(table_refs)))
 r.close()
 
 # convert Markdown in HTML with pandoc
