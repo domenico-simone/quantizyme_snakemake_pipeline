@@ -89,7 +89,7 @@ Since the workflow is not interactive, it can be useful to get the transcript le
 
 #### Tell the workflow what to do: compile the `analysis.tab` datasheet
 
-The file `analysis.tab` will be used by the workflow to infer all the parameters used in the generation of gene models. For each model, one row defines the parameters used. A sample of the structure of the `analysis.tab` file is provided as follows:
+The file `analysis.tab` will be used by the MODEL workflow to infer all the parameters used in the generation of gene models. For each model, one row defines the parameters used. A sample of the structure of the `analysis.tab` file is provided as follows:
 
 | projectID | remove_seqs | remove_lower_t | remove_higher_t | subtrees | nr_trials_random_picking | subgroup_percent |
 |:---------:|:-----------:|:--------------:|:---------------:|:--------:|:------------------------:|:----------------:|
@@ -129,7 +129,21 @@ nohup snakemake -pr \
 
 ### The MATCH workflow
 
+The file `analysis.match.tab` will be used by the MATCH workflow to set up the run. For each run, one row defines the parameters used. A sample of the structure of the `analysis.match.tab` file is provided as follows:
 
+| dataset | model                                                                |
+|:-------:|:--------------------------------------------------------------------:|
+| d1_R1   | ref_AA2_MODEL_200_1500_subtrees_3_trials_10_subgroup_30_MODEL.tar.gz |
+| d1_R2   | ref_AA2_MODEL_200_1500_subtrees_3_trials_10_subgroup_30_MODEL.tar.gz |
+| d2_R1   | ref_AA2_MODEL_200_1500_subtrees_3_trials_10_subgroup_30_MODEL.tar.gz |
+
+#### Run the whole MODEL workflow
+
+```bash
+nohup snakemake -rp \
+-j 100 --cluster-config cluster.yaml --cluster 'qsub -V -l h_rt=5:00:00 -pe smp {cluster.threads} -cwd -j y' \
+-s quantizyme_match.snakefile
+```
 
 #### Notes on the execution and re-execution of the workflow...
 
