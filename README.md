@@ -63,7 +63,7 @@ test2
 
 MEMO: add the adding of reference transcripts in the appropriate folder.
 
-## Running the workflow
+## Running the workflows
 
 Go to the working directory you have created and activate the conda environment
 
@@ -79,13 +79,15 @@ To run the workflow, you need to use R/3.2.0.
 module load R/3.2.0
 ```
 
+### The MODEL workflow
+
 Since the workflow is not interactive, it can be useful to get the transcript length distribution first, display the plot and set up the most suitable parameters for
 
 - `remove_seqs` (default: FALSE)
 - `remove_lower_t` (default: 0)
 - `remove higher_t` (default: 0)
 
-### Tell the workflow what to do: compile the `analysis.tab` datasheet
+#### Tell the workflow what to do: compile the `analysis.tab` datasheet
 
 The file `analysis.tab` will be used by the workflow to infer all the parameters used in the generation of gene models. For each model, one row defines the parameters used. A sample of the structure of the `analysis.tab` file is provided as follows:
 
@@ -102,7 +104,7 @@ In this case, the workflow will compute five models, based on the specified para
 
 **Note on parameters**: if you set the `remove_seqs` option as FALSE, the `remove_lower_t` and `remove_higher_t` options will make no difference in the setup.
 
-### Get the DAG representation of the workflow
+#### Get the DAG representation of the workflow
 
 Before executing the workflow, it could be a good idea to display a diagram of it. The following command creates a plot of your “directed acyclic graph” (namely DAG, a plot of all of the rules Snakemake will execute), which you can view using any picture viewing program.
 
@@ -111,19 +113,23 @@ snakemake --dag \
 -s quantizyme_model.3.snakefile | dot -Tsvg > quantizyme_model.dag.svg
 ```
 
-### Get transcript distribution
+#### Get transcript distribution
 
 ```bash
 snakemake -pr --until transcript_length_distribution -s quantizyme_model.3.snakefile
 ```
 
-### Run the whole MODEL workflow
+#### Run the whole MODEL workflow
 
 ```bash
 nohup snakemake -pr \
 -j 100 --cluster-config cluster.yaml --cluster 'qsub -V -l h_rt=3:00:00 -pe smp {cluster.threads} -cwd -j y' \
 -s quantizyme_model.3.snakefile &> quantizyme_model.log &
 ```
+
+### The MATCH workflow
+
+
 
 #### Notes on the execution and re-execution of the workflow...
 
