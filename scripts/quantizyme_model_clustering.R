@@ -56,7 +56,7 @@ if (is.null(opt$outdir)){
 transcript.fas = read.fasta(transcript.fasta, seqtype = "DNA", as.string = TRUE, forceDNAtolower = FALSE)
 if(class(transcript.fas) != "list") stop(paste("\n Reading file '", transcript.fasta, "' not successful. \n\n"))
 
-aln <- read.alignment(out.phy, format="phylip", forceToLower = FALSE)
+aln <- read.alignment(out.phy, format="fasta", forceToLower = FALSE)
 if(class(aln) != "alignment") stop(paste(" Could not read alignment '", out.phy, "'.\n\n"))
 if(aln$nb != length(transcript.fas)) stop(paste(" Alignment has", aln$nb, "entries, but transcript had", length(transcript.fas), "entries.\n\n"))
 # insert.text(outhtml, text="Calculated alignment for transcript sequence:", color="black")
