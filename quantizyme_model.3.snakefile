@@ -95,7 +95,7 @@ rule run_MSA:
     input:
         file=model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/{projectID}_start.fasta"
     output:
-        alignment= model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy"
+        alignment= model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.fasta"
     # threads: cluster_config['run_MSA']['threads']
     threads: 20
     log:
@@ -106,12 +106,12 @@ rule run_MSA:
         --threads {threads} \
         -i {input} \
         -o {output.alignment} \
-        --outfmt=phy  > {log} 2>&1
+        --outfmt=fa  > {log} 2>&1
         """
 
 rule clustering:
     input:
-        alignment= model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy"
+        alignment= model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.fasta"
     output:
         env_cluster_file= model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/envcluster.RData"
     params:
@@ -126,7 +126,7 @@ rule clustering:
 
 rule subtreeing1:
     input:
-        alignment = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy",
+        #alignment = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy",
         env_cluster_file = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/envcluster.RData",
     output:
         subtree_fasta = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/subtrees_{subtrees}/{projectID}_subtree_{n}.fasta",
@@ -137,7 +137,7 @@ rule subtreeing1:
     shell:
         """
         outdir=$(dirname {output.subtree_fasta})
-        Rscript --vanilla {scriptsDir}/quantizyme_model_cut_subtree.R -a {input.alignment} -i {params.fasta} -n {params.subtrees} -p {params.projectID} -e {input.env_cluster_file} -d ${{outdir}}
+        Rscript --vanilla {scriptsDir}/quantizyme_model_cut_subtree.R -i {params.fasta} -n {params.subtrees} -p {params.projectID} -e {input.env_cluster_file} -d ${{outdir}}
         """
 
 rule run_MSA_subtree:
