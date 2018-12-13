@@ -124,6 +124,18 @@ rule clustering:
         Rscript --vanilla {scriptsDir}/quantizyme_model_clustering.R -a {input.alignment} -i {params.fasta} -d ${{outdir}} -p {params.projectID} -e {output.env_cluster_file}
         """
 
+rule overall_tree:
+    input:
+        alignment = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.fasta"
+    output:
+        tree = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.tree"
+    shell:
+        """
+        export OMP_NUM_THREADS=3
+        FastTreeMP -noboot -nt -gtr \
+            {input.alignment} > {output.tree}
+        """
+
 rule subtreeing1:
     input:
         #alignment = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.phy",
