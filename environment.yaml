@@ -6,6 +6,7 @@ channels:
   - conda-forge
 dependencies:
   - clustalo=1.2.4
+  - fasttree=2.1.10
   - filechunkio=1.6
   - ftputil=3.2
   - hmmer=3.2.1
@@ -45,7 +46,7 @@ dependencies:
   - botocore=1.12.14
   - ca-certificates=2018.03.07
   - cairo=1.14.12
-  - certifi=2018.10.15
+  - certifi=2018.11.29
   - cffi=1.11.5
   - chardet=3.0.4
   - configargparse=0.13.0
