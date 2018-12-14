@@ -37,6 +37,19 @@ def get_transcript_length_distribution_plots(df, plot_dir="reference_transcripts
 def get_projectIDs(df):
     return list(set(df['projectID']))
 
+def get_overall_trees(df):
+    trees = []
+    for row in df.itertuples():
+        if str(getattr(row, "remove_seqs")) == "True":
+            trees.append("{}/{}_MODEL_{}_{}/align1.tree.jpeg".format(model_dir, \
+                                                                    getattr(row, "projectID"), \
+                                                                    getattr(row, "remove_lower_t"), \
+                                                                    getattr(row, "remove_higher_t")))
+        elif str(getattr(row, "remove_seqs")) == "False":
+            trees.append("{}/{}_MODEL_0_0/align1.tree.jpeg".format(model_dir, \
+                                                                    getattr(row, "projectID")))
+    return trees
+
 analysis_tab = pd.read_table("analysis.tab", sep = "\t", comment='#')
 #print(analysis_tab)
 
@@ -45,6 +58,7 @@ localrules: all, transcript_length_distribution, transcript_filtering, subtreein
 rule all:
     input:
         transcript_length_distribution_plots = get_transcript_length_distribution_plots(analysis_tab),
+        overall_trees = get_overall_trees(analysis_tab),
         model_archives = get_out_files(analysis_tab, model_dir=model_dir)
 
 rule transcript_length_distribution:
@@ -129,11 +143,24 @@ rule overall_tree:
         alignment = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.fasta"
     output:
         tree = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.tree"
+    #threads: 3
     shell:
         """
-        export OMP_NUM_THREADS=3
+        export OMP_NUM_THREADS={threads}
         FastTreeMP -noboot -nt -gtr \
             {input.alignment} > {output.tree}
+        """
+
+rule plot_overall_tree:
+    input:
+        tree = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.tree"
+    output:
+        plot_tree = model_dir + "/{projectID}_MODEL_{remove_lower_t}_{remove_higher_t}/align1.tree.jpeg"
+    params:
+        projectID = lambda wildcards: wildcards.projectID
+    shell:
+        """
+        quantizyme_model_plot_overall_tree.R --tree {input.tree} --tree_plot {output.plot_tree} --projectID {params.projectID}
         """
 
 rule subtreeing1:
